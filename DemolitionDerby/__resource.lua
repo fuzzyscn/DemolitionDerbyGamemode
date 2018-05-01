@@ -18,6 +18,7 @@ client_script {
 	'CLIENT/GamerTags.lua',
 	'CLIENT/AFKPingKick.lua',
 	'CLIENT/UI.lua',
+	'CLIENT/Stats.lua',
 	'CLIENT/DevMenu.lua',
 }
 
@@ -30,4 +31,5 @@ server_script {
 	'SERVER/MapsManager.lua',
 	'SERVER/ServerEvents.lua',
 	'SERVER/AFKPingKick.lua',
+	'SERVER/Stats.lua',
 }
