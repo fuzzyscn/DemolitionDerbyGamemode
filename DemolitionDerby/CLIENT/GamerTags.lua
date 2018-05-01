@@ -14,7 +14,9 @@ Citizen.CreateThread(function()
 						if IsMpGamerTagActive(PlayerTags[Player + 1]) then
 							RemoveMpGamerTag(PlayerTags[Player + 1])
 						end
-						table.remove(PlayerTags, Player + 1)
+						if PlayerTags[Player + 1] then
+							table.remove(PlayerTags, Player + 1)
+						end
 					end
 				else
 					if NetworkIsPlayerActive(Player) and not IsPlayerDead(Player) then
