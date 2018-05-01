@@ -1,8 +1,8 @@
 Maps = {}
 
 local function GetMapsFromPath()
- 	print('>>> Getting Maps now!\n')
-   Content = ''
+	print('>>> Getting Maps now!\n')
+	Content = ''
 	local TMPFile = os.tmpname()
 	if os.getenv('HOME') then
 		local Result = os.execute('ls -a1 DemolitionDerbyMaps >' .. TMPFile)
@@ -25,15 +25,17 @@ local function GetMapsFromPath()
 end
 
 local function CheckForDefaultMap()
-	for i = 1, 3 do
+	for i = 1, 100 do
 		local DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'DefaultMap' .. i .. '.xml', 'r')
 		if not DefaultFile then
 			local BackupMap = LoadResourceFile(GetCurrentResourceName(), 'SERVER' .. GetOSSep() .. 'BackupMaps' .. GetOSSep() .. 'BackupMap' .. i .. '.xml')
-			DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'DefaultMap' .. i .. '.xml', 'w+')
-			DefaultFile:write(BackupMap)
-			DefaultFile:flush()
+			if BackupMap then
+				DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'DefaultMap' .. i .. '.xml', 'w+')
+				DefaultFile:write(BackupMap)
+				DefaultFile:flush()
+				DefaultFile:close()
+			end
 		end
-		DefaultFile:close()
 	end
 	GetMapsFromPath()
 end

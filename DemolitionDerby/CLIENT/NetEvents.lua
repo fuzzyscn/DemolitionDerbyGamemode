@@ -10,7 +10,7 @@ end)
 
 RegisterNetEvent('DD:Client:GameFinished')
 AddEventHandler('DD:Client:GameFinished', function()
-	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; MidGameJoiner = false
+	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; MidGameJoiner = false; AFKKickEnabled = false
 	if NetworkIsInSpectatorMode() then
 		Spectate(false, PlayerId())
 	end

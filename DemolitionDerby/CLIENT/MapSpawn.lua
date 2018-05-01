@@ -45,8 +45,11 @@ function SpawnMap(MapName, MapTable, ID)
 				local Prop = CreateObject(tonumber(Value.ModelHash), tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, Dynamic)
 				SetEntityCollision(Prop, false, false)
 				SetEntityCoords(Prop, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, false, false)
-				if tonumber(Value.Pitch) < 0.0 then Value.Pitch = 180.0 + math.abs(tonumber(Value.Pitch)) end
-				SetEntityRotation(Prop, tonumber(Value.Pitch), tonumber(Value.Roll), tonumber(Value.Yaw), 3, 0)
+				Value.Pitch = tonumber(Value.Pitch) + 0.0
+				Value.Roll = tonumber(Value.Roll) + 0.0
+				Value.Yaw = tonumber(Value.Yaw) + 0.0
+				if Value.Pitch < 0.0 then Value.Pitch = 180.0 + (180.0 - math.abs(Value.Pitch)) end
+				SetEntityRotation(Prop, Value.Pitch, Value.Roll, Value.Yaw, 3, 0)
 				FreezeEntityPosition(Prop, true)
 				SetEntityCollision(Prop, true, true)
 				
