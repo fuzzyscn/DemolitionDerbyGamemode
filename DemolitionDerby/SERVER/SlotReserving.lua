@@ -25,14 +25,14 @@ AddEventHandler('playerConnecting', function(PlayerName, KickReason, Deferrals)
 						Deferrals.update('Admin detected, using reserved slot. Joining now!')
 						Deferrals.done()
 					else
-						Deferrals.update('No free Slot, trying again in ' .. WaitingDuration .. ' Seconds. - Tries: ' .. Tries .. '/' .. (GetConvar('QueueMaxTries', 10)))
+						Deferrals.update('No free Slot available, trying again in ' .. WaitingDuration .. ' Seconds. - Tries: ' .. Tries .. '/' .. QueueMaxTries)
 					end
 				end
 				if Tries ~= QueueMaxTries then
 					Citizen.Wait(WaitingDuration * 1000)
 				end
 			end
-			Deferrals.done('No free Slot, try again later.')
+			Deferrals.done('No free Slot available, try again later.')
 		end)
 	end
 end)
