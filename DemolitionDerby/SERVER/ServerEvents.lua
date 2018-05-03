@@ -54,7 +54,7 @@ end)
 
 RegisterServerEvent('DD:Server:GetDevInfos')
 AddEventHandler('DD:Server:GetDevInfos', function()
-	TriggerClientEvent('DD:Client:GotDevInfos', source, IsAceAllowed('DD'), Maps)
+	TriggerClientEvent('DD:Client:GotDevInfos', source, IsPlayerAceAllowed(source, 'DD'), Maps)
 end)
 
 RegisterServerEvent('DD:Server:DevMode')

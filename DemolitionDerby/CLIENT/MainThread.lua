@@ -1,5 +1,5 @@
 GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
-CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; DevTestMode = false; ScaleformCheckValue = -1
+CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1
 
 local function RemoveMyVehicle()
 	if IsPedInAnyVehicle(PlayerPedId(), false) then

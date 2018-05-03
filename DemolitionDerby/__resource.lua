@@ -14,12 +14,12 @@ client_script {
 	'CLIENT/TimeAndWeatherSync.lua',
 	'CLIENT/MapSpawn.lua',
 	'CLIENT/PlayerSpawn.lua',
+	'CLIENT/DevMenu.lua',
 	'CLIENT/MainThread.lua',
 	'CLIENT/GamerTags.lua',
 	'CLIENT/AFKPingKick.lua',
 	'CLIENT/UI.lua',
 	'CLIENT/Stats.lua',
-	'CLIENT/DevMenu.lua',
 }
 
 server_script {

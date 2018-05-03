@@ -1,4 +1,4 @@
-IsDev = false; AvailableMaps = {}; CurrentMap = ''
+IsDev = false; AvailableMaps = {}; CurrentMap = ''; DevTestMode = false
 Pool = MenuPool.New()
 MainMenu = UIMenu.New('Dev Menu', '~b~Various options for development/testing.')
 Pool:Add(MainMenu)
@@ -51,7 +51,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         Pool:ProcessMenus()
-        if IsControlJustPressed(1, 57) or IsDisabledControlJustPressed(1, 57) then
+        if (IsControlJustPressed(1, 57) or IsDisabledControlJustPressed(1, 57)) and IsDev then
             MainMenu:Visible(not MainMenu:Visible())
             if MainMenu:Visible() then
 				ScaleformCheckValue = -1
