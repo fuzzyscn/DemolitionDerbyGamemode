@@ -20,13 +20,12 @@ end)
 
 RegisterServerEvent('DD:Server:GetRandomMap')
 AddEventHandler('DD:Server:GetRandomMap', function()
-	local Source = source
 	local RandomMapName = Maps[math.random(#Maps)]
 	local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. RandomMapName, 'r')
 	local MapFileContent = MapFile:read('*a')
 	local MapFileContentToLUA = MapToLUA(MapFileContent)
 	MapFile:close()
-	TriggerClientEvent('DD:Client:SpawnMap', -1, RandomMapName, MapFileContentToLUA, Source)
+	TriggerClientEvent('DD:Client:SpawnMap', -1, RandomMapName, MapFileContentToLUA, source)
 end)
 
 RegisterServerEvent('DD:Server:Countdown')
@@ -51,5 +50,26 @@ end)
 RegisterServerEvent('DD:Server:IsGameRunningAnswer')
 AddEventHandler('DD:Server:IsGameRunningAnswer', function(Player, State)
 	TriggerClientEvent('DD:Client:IsGameRunningAnswer', Player, State)
+end)
+
+RegisterServerEvent('DD:Server:GetDevInfos')
+AddEventHandler('DD:Server:GetDevInfos', function()
+	TriggerClientEvent('DD:Client:GotDevInfos', source, IsAceAllowed('DD'), Maps)
+end)
+
+RegisterServerEvent('DD:Server:DevMode')
+AddEventHandler('DD:Server:DevMode', function(DevMode)
+	TriggerClientEvent('DD:Client:DevMode', -1, DevMode)
+end)
+
+RegisterServerEvent('DD:Server:LoadMap')
+AddEventHandler('DD:Server:LoadMap', function(Map)
+	if TableContainsValue(Maps, Map) then
+		local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map, 'r')
+		local MapFileContent = MapFile:read('*a')
+		local MapFileContentToLUA = MapToLUA(MapFileContent)
+		MapFile:close()
+		TriggerClientEvent('DD:Client:SpawnMap', -1, Map, MapFileContentToLUA, source)
+	end
 end)
 

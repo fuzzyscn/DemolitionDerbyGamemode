@@ -1,4 +1,5 @@
-GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false
+GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
+CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; DevTestMode = false; ScaleformCheckValue = -1
 
 local function RemoveMyVehicle()
 	if IsPedInAnyVehicle(PlayerPedId(), false) then
@@ -139,7 +140,7 @@ Citizen.CreateThread(function()
 		if NetworkIsHost() then
 			SyncTimeAndWeather()
 			Players = GetPlayers()
-			if not GameStarted and (#Players > 1) and IsControlJustPressed(1, 166) then
+			if not GameStarted and (#Players >= NeededPlayer) and IsControlJustPressed(1, 166) then
 				TriggerServerEvent('DD:Server:GetRandomMap')
 				GameStarted = true
 			end
@@ -152,11 +153,11 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 	end
 
-	local Players, LivingPlayer, ScaleformHandle, ScaleformCheckValue = -1
+	local Players, LivingPlayer, ScaleformHandle
 	local WaitingForOtherPlayers = {{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('FM_COR_WAIT')}};
 		  HostStart = {{['Slot'] = 0, ['Control'] = 166, ['Text'] = GetLabelText('R2P_MENU_LAU')}};
 		  WaitingForHost = {{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('FM_COR_HEIWAIT')}};
-		  MorePlayerNeeded = {{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('PM_WAIT')}, {['Slot'] = 1, ['Control'] = -1, ['Text'] = GetLabelText('FM_UNB_TEAM'):gsub('~1~', '2'):gsub('~a~', 'Demolition Derby'):gsub('~r~', ''):gsub('~s~', '')}};
+		  MorePlayerNeeded = {{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('PM_WAIT')}, {['Slot'] = 1, ['Control'] = -1, ['Text'] = GetLabelText('FM_UNB_TEAM'):gsub('~1~', tostring(NeededPlayer)):gsub('~a~', 'Demolition Derby'):gsub('~r~', ''):gsub('~s~', '')}};
 
 	while true do
 		Citizen.Wait(0)
@@ -172,22 +173,22 @@ Citizen.CreateThread(function()
 				SetEntityInvincible(PlayerPedId(), true)
 			end
 			
-			if #Players > 1 then
+			if #Players >= NeededPlayer then
 				if NetworkIsHost() then
-					if ScaleformCheckValue ~= 1 then
+					if ScaleformCheckValue ~= 1 and not MainMenu:Visible() then
 						ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", HostStart)
 						ScaleformCheckValue = 1
 					end
 					DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 				else
-					if ScaleformCheckValue ~= 2 then
+					if ScaleformCheckValue ~= 2 and not MainMenu:Visible() then
 						ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", WaitingForHost)
 						ScaleformCheckValue = 2
 					end
 					DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 				end
 			else
-				if ScaleformCheckValue ~= 3 then
+				if ScaleformCheckValue ~= 3 and not MainMenu:Visible() then
 					ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", MorePlayerNeeded)
 					ScaleformCheckValue = 3
 				end
@@ -199,7 +200,7 @@ Citizen.CreateThread(function()
 			while Waiting do
 				Citizen.Wait(0)
 				Draw(GetLabelText('FM_COR_PRDY'):gsub('~1~', #ReadyPlayers, 1):gsub('~1~', #Players), 0, 40, 200, 255, 0.5, 0.5, 0.5, 0.5, 2, true, 0) --"*Specific Amount* of *Amount Players* ready"
-				if ScaleformCheckValue ~= 0 then
+				if ScaleformCheckValue ~= 0 and not MainMenu:Visible() then
 					ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", WaitingForOtherPlayers)
 					ScaleformCheckValue = 0
 				end
@@ -236,6 +237,8 @@ Citizen.CreateThread(function()
 					end
 					if #LivingPlayer > 1 then
 						SpectatingControl()
+					else
+						Respawn()
 					end
 				end
 			else
@@ -258,11 +261,11 @@ Citizen.CreateThread(function()
 				if ReferenceZ - MyCoords.z > 10.0 then
 					NetworkExplodeVehicle(GetVehiclePedIsIn(PlayerPedId(), false), true, true, 0)
 				end
-				if #LivingPlayer == 1 then
+				if #LivingPlayer == 1 and not DevTestMode then
 					Finished(true)
 				end
 			end
-			if NetworkIsHost() and #LivingPlayer == 0 then
+			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then
 				Finished(false)
 			end
 		end

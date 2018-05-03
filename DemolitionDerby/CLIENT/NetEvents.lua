@@ -10,7 +10,8 @@ end)
 
 RegisterNetEvent('DD:Client:GameFinished')
 AddEventHandler('DD:Client:GameFinished', function()
-	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; MidGameJoiner = false; AFKKickEnabled = false
+	GameStarted = false; GameRunning = false; StartState = nil;
+	ReadyPlayers = {}; MidGameJoiner = false; AFKKickEnabled = false;
 	if NetworkIsInSpectatorMode() then
 		Spectate(false, PlayerId())
 	end
@@ -31,8 +32,8 @@ AddEventHandler('DD:Client:SpawnMap', function(MapName, MapTable, Source)
 end)
 
 RegisterNetEvent('DD:Client:MapInformations')
---AddEventHandler('DD:Client:MapInformations', function(Props, RefZ, RandomVehicleClass)
 AddEventHandler('DD:Client:MapInformations', function(RandomVehicleClass)
+--AddEventHandler('DD:Client:MapInformations', function(Props, RefZ, RandomVehicleClass)
 --	ReferenceZ = RefZ
 --	SpawnedProps = Props
 	VehicleClass = RandomVehicleClass
@@ -68,7 +69,25 @@ AddEventHandler('DD:Client:IsGameRunningAnswer', function(State)
 	end
 end)
 
+RegisterNetEvent('DD:Client:GotDevInfos')
+AddEventHandler('DD:Client:GotDevInfos', function(Allowed, Maps)
+	IsDev = Allowed
+	AvailableMaps = Maps
+	TriggerEvent('DD:Client:SetUpDevMenu')
+end)
+
+RegisterNetEvent('DD:Client:DevMode')
+AddEventHandler('DD:Client:DevMode', function(DevMode)
+	DevTestMode = DevMode
+	if DevTestMode then
+		NeededPlayer = 1
+	else
+		NeededPlayer = 2
+	end
+end)
+
 AddEventHandler('onClientGameTypeStart', function()
+	TriggerServerEvent('DD:Server:GetDevInfos')
 	for Key, Value in ipairs(SpawnLocations) do
 		local SpawnPoint = exports.spawnmanager:addSpawnPoint(
 															  {
