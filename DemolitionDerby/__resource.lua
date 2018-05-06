@@ -25,7 +25,7 @@ client_script {
 server_script {
 	'SERVER/GeneralStuff.lua',
 	'SERVER/GlobalFunctions.lua',
-	'SERVER/BugReport.lua',
+	'SERVER/Commands.lua',
 	'SERVER/SlotReserving.lua',
 	'SERVER/MapToLUA.lua',
 	'SERVER/MapsManager.lua',
