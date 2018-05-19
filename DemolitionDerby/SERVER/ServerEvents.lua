@@ -20,6 +20,7 @@ end)
 
 RegisterServerEvent('DD:Server:GetRandomMap')
 AddEventHandler('DD:Server:GetRandomMap', function()
+	math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
 	local RandomMapName = Maps[math.random(#Maps)]
 	local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. RandomMapName, 'r')
 	local MapFileContent = MapFile:read('*a')

@@ -47,7 +47,7 @@ function GetLivingPlayers()
 	local Players = GetPlayers()
 	local LivingPlayers = {}
 	for Key, Player in ipairs(Players) do
-		if not IsPlayerDead(Player[1]) then
+		if IsPlayerAbleToPlay(Player[1]) then
 			table.insert(LivingPlayers, Player[1])
 		end
 	end
@@ -93,7 +93,7 @@ function ShowNotification(Text)
 end
 
 function GetRandomVehicleClass()
-	local Class = GetRandomIntInRange(0, 8)
+	local Class = math.random(0, 8)
 	if Class == 8 then
 		Class = 9
 	end
@@ -108,7 +108,7 @@ function GetRandomVehicleFromClass(Class)
 		end
 	end
 	
-	local RandomIndex = GetRandomIntInRange(1, #ClassVehicles)
+	local RandomIndex = math.random(1, #ClassVehicles)
 	local Vehicle = GetHashKey(ClassVehicles[RandomIndex])
 	if not IsModelValid(Vehicle) then
 		return GetRandomVehicleFromClass(Class)
@@ -117,7 +117,7 @@ function GetRandomVehicleFromClass(Class)
 end
 
 function GetRandomPed()
-	local RandomIndex = GetRandomIntInRange(1, #Peds)
+	local RandomIndex = math.random(1, #Peds)
 	if not IsModelValid(GetHashKey(Peds[RandomIndex][1])) then
 		return GetRandomPed()
 	end
@@ -127,14 +127,14 @@ end
 function ScreenFadeOut(Duration)
 	DoScreenFadeOut(Duration)
 	while IsScreenFadingOut() do
-		Citizen.Wait(0)
+		Citizen.Wait(250)
 	end
 end
 
 function ScreenFadeIn(Duration)
 	DoScreenFadeIn(Duration)
 	while IsScreenFadingIn() do
-		Citizen.Wait(0)
+		Citizen.Wait(250)
 	end
 end
 
@@ -143,23 +143,30 @@ function Spectate(Toggle, Player)
 	NetworkSetInSpectatorMode(Toggle, GetPlayerPed(Player))
 end
 
+function RemoveMyVehicle()
+	if IsPedInAnyVehicle(PlayerPedId(), true) then
+		SetEntityAsMissionEntity(GetVehiclePedIsIn(PlayerPedId(), false), true, true)
+		DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), false))
+	end
+end
+
 SpawnLocations = {
-				  {261.4586, -998.8196, -99.00863}, {-18.07856, -583.6725, 79.46569},
-				  {-35.31277, -580.4199, 88.71221}, {-1468.14, -541.815, 73.4442},
-				  {-1477.14, -538.7499, 55.5264}, {-915.811, -379.432, 113.6748},
-				  {-614.86, 40.6783, 97.60007}, {-773.407, 341.766, 211.397},
-				  {-169.286, 486.4938, 137.4436}, {340.9412, 437.1798, 149.3925},
-				  {373.023, 416.105, 145.7006}, {-676.127, 588.612, 145.1698},
-				  {-763.107, 615.906, 144.1401}, {-857.798, 682.563, 152.6529},
-				  {120.5, 549.952, 184.097}, {-1288, 440.748, 97.69459},
-				  {261.4586, -998.8196, -99.00863}, {-18.07856, -583.6725, 79.46569},
-				  {-35.31277, -580.4199, 88.71221}, {-1468.14, -541.815, 73.4442},
-				  {-1477.14, -538.7499, 55.5264}, {-915.811, -379.432, 113.6748},
-				  {-614.86, 40.6783, 97.60007}, {-773.407, 341.766, 211.397},
-				  {-169.286, 486.4938, 137.4436}, {340.9412, 437.1798, 149.3925},
-				  {373.023, 416.105, 145.7006}, {-676.127, 588.612, 145.1698},
-				  {-763.107, 615.906, 144.1401}, {-857.798, 682.563, 152.6529},
-				  {120.5, 549.952, 184.097}, {-1288, 440.748, 97.69459},
+				  {['x'] = 261.4586, ['y'] = -998.8196, ['z'] = -99.00863, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -18.07856, ['y'] = -583.6725, ['z'] = 79.46569, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -35.31277, ['y'] = -580.4199, ['z'] = 88.71221, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1468.14, ['y'] = -541.815, ['z'] = 73.4442, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -1477.14, ['y'] = -538.7499, ['z'] = 55.5264, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -915.811, ['y'] = -379.432, ['z'] = 113.6748, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -614.86, ['y'] = 40.6783, ['z'] = 97.60007, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -773.407, ['y'] = 341.766, ['z'] = 211.397, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -169.286, ['y'] = 486.4938, ['z'] = 137.4436, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = 340.9412, ['y'] = 437.1798, ['z'] = 149.3925, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = 373.023, ['y'] = 416.105, ['z'] = 145.7006, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -676.127, ['y'] = 588.612, ['z'] = 145.1698, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -763.107, ['y'] = 615.906, ['z'] = 144.1401, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -857.798, ['y'] = 682.563, ['z'] = 152.6529, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = 120.5, ['y'] = 549.952, ['z'] = 184.097, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1288, ['y'] = 440.748, ['z'] = 97.69459, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = 261.4586, ['y'] = -998.8196, ['z'] = -99.00863, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -18.07856, ['y'] = -583.6725, ['z'] = 79.46569, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -35.31277, ['y'] = -580.4199, ['z'] = 88.71221, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1468.14, ['y'] = -541.815, ['z'] = 73.4442, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -1477.14, ['y'] = -538.7499, ['z'] = 55.5264, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -915.811, ['y'] = -379.432, ['z'] = 113.6748, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -614.86, ['y'] = 40.6783, ['z'] = 97.60007, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -773.407, ['y'] = 341.766, ['z'] = 211.397, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -169.286, ['y'] = 486.4938, ['z'] = 137.4436, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = 340.9412, ['y'] = 437.1798, ['z'] = 149.3925, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = 373.023, ['y'] = 416.105, ['z'] = 145.7006, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -676.127, ['y'] = 588.612, ['z'] = 145.1698, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = -763.107, ['y'] = 615.906, ['z'] = 144.1401, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -857.798, ['y'] = 682.563, ['z'] = 152.6529, ['h'] = 0.0, ['hash'] = GetRandomPed()},
+				  {['x'] = 120.5, ['y'] = 549.952, ['z'] = 184.097, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1288, ['y'] = 440.748, ['z'] = 97.69459, ['h'] = 0.0, ['hash'] = GetRandomPed()},
 			     };
 				 
 function Respawn()
@@ -167,12 +174,53 @@ function Respawn()
 		ShutdownLoadingScreen()
 		ShutdownLoadingScreenNui()
 	end
-	exports.spawnmanager:spawnPlayer(SpawnLocations[PlayerId() + 1])
+
+	ScreenFadeOut(500)
+
+	if IsEntityAttached(PlayerPedId()) then
+		DetachEntity(PlayerPedId(), false, true)
+	end
 	
-	Citizen.Wait(5000)
+	SetPlayerControl(PlayerId(), false, false)
+	SetPlayerInvincible(PlayerId(), true)
+
+	SetEntityVisible(PlayerPedId(), false)
+	SetEntityCollision(PlayerPedId(), false)
+	FreezeEntityPosition(PlayerPedId(), true)
+
+	local SpawnValues = SpawnLocations[PlayerId() + 1]
+	if not HasModelLoaded(SpawnValues.hash) then
+		RequestModel(SpawnValues.hash)
+		while not HasModelLoaded(SpawnValues.hash) do
+			Citizen.Wait(500)
+		end
+	end
+	SetPlayerModel(PlayerId(), SpawnValues.hash)
+	SetModelAsNoLongerNeeded(SpawnValues.hash)
+	while not PlayerPedId() do
+		Citizen.Wait(1000)
+	end
+	RequestCollisionAtCoord(SpawnValues.x, SpawnValues.y, SpawnValues.z)
+	SetEntityCoordsNoOffset(PlayerPedId(), SpawnValues.x, SpawnValues.y, SpawnValues.z, false, false, false, true)
+	NetworkResurrectLocalPlayer(SpawnValues.x, SpawnValues.y, SpawnValues.z, SpawnValues.h, true, true, false)
+	
+	ClearPedTasksImmediately(PlayerPedId())
+
+	while not HasCollisionLoadedAroundEntity(PlayerPedId()) do
+		Citizen.Wait(500)
+	end
+
+	ScreenFadeIn(500)
+
+	SetPlayerControl(PlayerId(), true, false)
+	SetPlayerInvincible(PlayerId(), false)
 
 	SetPedRandomComponentVariation(PlayerPedId(), false)
 	SetPedRandomProps(PlayerPedId())
+
+	SetEntityVisible(PlayerPedId(), true)
+	if not IsPedInAnyVehicle(PlayerPedId()) then SetEntityCollision(PlayerPedId(), true) end
+	FreezeEntityPosition(PlayerPedId(), false)
 end
 
 function PreIBUse(ScaleformName, Controls)
@@ -213,5 +261,12 @@ function PreIBUse(ScaleformName, Controls)
 	PopScaleformMovieFunctionVoid()
 
 	return ScaleformHandle
+end
+
+function IsPlayerAbleToPlay(Player)
+	if not IsPlayerDead(Player) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ZERO')) then
+		return true
+	end
+	return false
 end
 

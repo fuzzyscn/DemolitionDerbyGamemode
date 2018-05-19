@@ -9,7 +9,7 @@ Citizen.CreateThread(function()
 			PingTimer = GetGameTimer()
 		end
 		
-		if not IsPlayerDead(PlayerId()) and AFKKickEnabled then
+		if IsPlayerAbleToPlay(PlayerId()) and AFKKickEnabled then
 			if GetEntityCoords(PlayerPedId(), false) == PlayerCoords then
 				if GetGameTimer() - AFKTimer >= (AFKMaxDuration * 60000) then
 					TriggerServerEvent('DD:Server:AFKKick')

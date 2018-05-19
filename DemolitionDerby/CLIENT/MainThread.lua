@@ -1,13 +1,6 @@
 GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
 CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1
 
-local function RemoveMyVehicle()
-	if IsPedInAnyVehicle(PlayerPedId(), false) then
-		SetEntityAsMissionEntity(GetVehiclePedIsIn(PlayerPedId(), false), true, true)
-		DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), false))
-	end
-end
-
 local function TeleportMyBodyAway()
 	if not IsEntityAtCoord(PlayerPedId(), 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0, 1, 0) then
 		SetEntityVisible(PlayerPedId(), false, 0)
@@ -18,11 +11,11 @@ end
 
 local function SetSpectating()
 	local LivingPlayer = GetLivingPlayers()
-	CurrentlySpectating = LivingPlayer[GetRandomIntInRange(1, #LivingPlayer)]
-	while IsPlayerDead(CurrentlySpectating) do
-		Citizen.Wait(0)
+	CurrentlySpectating = LivingPlayer[math.random(1, #LivingPlayer)]
+	while not IsPlayerAbleToPlay(CurrentlySpectating) do
+		Citizen.Wait(250)
 		LivingPlayer = GetLivingPlayers()
-		CurrentlySpectating = LivingPlayer[GetRandomIntInRange(1, #LivingPlayer)]
+		CurrentlySpectating = LivingPlayer[math.random(1, #LivingPlayer)]
 	end
 	Spectate(true, CurrentlySpectating)
 end
@@ -57,7 +50,7 @@ local function SpectatingControl()
 	local LivingPlayer = GetLivingPlayers()
 	local CurrentKey = GetKeyInTable(LivingPlayer, CurrentlySpectating)
 	
-	if IsPlayerDead(CurrentlySpectating) then
+	if not IsPlayerAbleToPlay(CurrentlySpectating) then
 		NextPlayer(LivingPlayer, CurrentKey)
 	end
 	
@@ -93,10 +86,10 @@ local function Countdown(State)
 	end
 end
 
-local function Finished(LastPlayer)
+local function Finished(IsLastPlayer)
 	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}
-	if LastPlayer then
-		ScreenFadeOut(2500)
+	if IsLastPlayer then
+		ScreenFadeOut(1500)
 		RemoveMyVehicle()
 		TeleportMyBodyAway()
 	end
@@ -110,7 +103,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 		if RescueFadedOutScreen then
 			if IsScreenFadedOut() then
-				ScreenFadeIn(2500)
+				ScreenFadeIn(1500)
 			end
 			RescueFadedOutScreen = false
 		end
@@ -166,10 +159,10 @@ Citizen.CreateThread(function()
 		
 		if not GameStarted and not GameRunning then
 			if IsScreenFadedOut() then
-				ScreenFadeIn(2500)
+				ScreenFadeIn(1500)
 			end
 			
-			if not IsPlayerDead(PlayerId()) then
+			if IsPlayerAbleToPlay(PlayerId()) then
 				SetEntityInvincible(PlayerPedId(), true)
 			end
 			
@@ -226,18 +219,21 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif GameStarted and GameRunning then
-			if IsPlayerDead(PlayerId()) then
+			if not IsPlayerAbleToPlay(PlayerId()) then
+				if not NetworkIsInSpectatorMode() and #LivingPlayer > 1 then
+					ScreenFadeOut(1500)
+					RemoveMyVehicle()
+					TeleportMyBodyAway()
+					SetSpectating()
+					ScreenFadeIn(1500)
+				end
 				if #LivingPlayer > 1 then
-					if not NetworkIsInSpectatorMode() then
-						ScreenFadeOut(2500)
-						RemoveMyVehicle()
-						TeleportMyBodyAway()
-						SetSpectating()
-						ScreenFadeIn(2500)
-					end
-					if #LivingPlayer > 1 then
-						SpectatingControl()
-					else
+					SpectatingControl()
+				else
+					ScreenFadeOut(1500)
+					RemoveMyVehicle()
+					TeleportMyBodyAway()
+					if not DevTestMode then
 						Respawn()
 					end
 				end

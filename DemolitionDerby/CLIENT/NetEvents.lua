@@ -1,3 +1,8 @@
+RegisterNetEvent('DD:Client:ToConsole')
+AddEventHandler('DD:Client:ToConsole', function(String)
+	Citizen.Trace(String)
+end)
+
 RegisterNetEvent('DD:Client:Countdown')
 AddEventHandler('DD:Client:Countdown', function(State)
 	StartState = State
@@ -15,6 +20,7 @@ AddEventHandler('DD:Client:GameFinished', function()
 	if NetworkIsInSpectatorMode() then
 		Spectate(false, PlayerId())
 	end
+	RemoveMyVehicle()
 	CurrentlySpectating = -1
 	Respawn()
 end)
@@ -87,22 +93,13 @@ AddEventHandler('DD:Client:DevMode', function(DevMode)
 end)
 
 AddEventHandler('onClientGameTypeStart', function()
-	TriggerServerEvent('DD:Server:GetDevInfos')
-	for Key, Value in ipairs(SpawnLocations) do
-		local SpawnPoint = exports.spawnmanager:addSpawnPoint(
-															  {
-															   x = Value[1],
-															   y = Value[2],
-															   z = Value[3],
-															   heading = 0.0,
-															   model = GetRandomPed()
-															  }
-															 )
-		SpawnLocations[Key] = SpawnPoint
+	if GetIsLoadingScreenActive() then
+		ShutdownLoadingScreen()
+		ShutdownLoadingScreenNui()
 	end
 
-	exports.spawnmanager:setAutoSpawn(false)
-	
+	TriggerServerEvent('DD:Server:GetDevInfos')
+
 	if NetworkGetNumConnectedPlayers() > 1 then
 		TriggerServerEvent('DD:Server:IsGameRunning')
 	else

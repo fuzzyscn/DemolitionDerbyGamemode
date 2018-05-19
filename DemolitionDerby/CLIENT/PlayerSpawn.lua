@@ -42,7 +42,7 @@ function SpawnMe()
 		SetVehicleOnGroundProperly(VehicleHandle)
 	end
 	
-	ScreenFadeIn(2500)
+	ScreenFadeIn(1500)
 
 	TriggerServerEvent('DD:Server:Ready', PlayerId())
 	

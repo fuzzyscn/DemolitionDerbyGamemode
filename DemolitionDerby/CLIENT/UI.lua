@@ -10,13 +10,13 @@ Citizen.CreateThread(function()
 		DrawTxt('~b~Player', x, y)
 		DrawTxt('~b~W/L', x + 0.125, y)
 		y = y + 0.03
-		for i,p in pairs(GetPlayers()) do
-            if IsPedDeadOrDying(GetPlayerPed(p[1])) then
-                DrawTxt('~c~' .. p[2], x, y)
+		for Key, Value in pairs(GetPlayers()) do
+            if IsPlayerAbleToPlay(Value[1]) then
+                DrawTxt('~c~' .. Value[2], x, y)
             else
-                DrawTxt('~w~' .. p[2], x, y)
+                DrawTxt('~w~' .. Value[2], x, y)
             end
-			if GetPlayerPed(-1) == GetPlayerPed(p[1]) then
+			if PlayerPedId() == GetPlayerPed(Value[1]) then
 				DrawTxt('~g~' .. wins .. '~w~/~r~' .. losses, x + 0.125, y)
 			else
 				DrawTxt('~g~' .. '0' .. '~w~/~r~' .. '0', x + 0.125, y)
