@@ -10,7 +10,7 @@ client_script {
 	'CLIENT/Peds.lua',
 	'CLIENT/Vehicles.lua',
 	'CLIENT/NetEvents.lua',
-	'CLIENT/GlobalFunctions.lua',
+	'CLIENT/GlobalVariablesAndFunctions.lua',
 	'CLIENT/TimeAndWeatherSync.lua',
 	'CLIENT/MapSpawn.lua',
 	'CLIENT/PlayerSpawn.lua',

@@ -1,3 +1,5 @@
+MaximumPlayer = 32
+
 function TableContainsKey(Table, SearchedFor)
 	for Key, Value in pairs(Table) do
 		if Key == SearchedFor then
@@ -37,18 +39,17 @@ function GetPlayers()
 	local Players = {}
 	for i = 0, 31 do
 		if NetworkIsPlayerConnected(i) and NetworkIsPlayerActive(i) then
-			table.insert(Players, {i, GetPlayerName(i)})
+			table.insert(Players, {['id'] = i, ['name'] = GetPlayerName(i)})
 		end
 	end
     return Players
 end
 
 function GetLivingPlayers()
-	local Players = GetPlayers()
 	local LivingPlayers = {}
-	for Key, Player in ipairs(Players) do
-		if IsPlayerAbleToPlay(Player[1]) then
-			table.insert(LivingPlayers, Player[1])
+	for Key, Player in ipairs(GetPlayers()) do
+		if IsPlayerAbleToPlay(Player.id) then
+			table.insert(LivingPlayers, Player.id)
 		end
 	end
 	return LivingPlayers

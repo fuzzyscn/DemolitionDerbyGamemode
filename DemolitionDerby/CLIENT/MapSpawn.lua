@@ -1,7 +1,7 @@
 SpawnedPropsLocal = {}; SpawnedProps = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
 
 function SpawnMap(MapName, MapTable, ID)
-	if #MapTable.Vehicles >= 32 then
+	if #MapTable.Vehicles >= MaximumPlayer then
 --[[
 		for Key, Value in ipairs(SpawnedProps) do
 			local EntityHandle = NetworkGetEntityFromNetworkId(Value)
@@ -86,7 +86,7 @@ function SpawnMap(MapName, MapTable, ID)
 		end
 	else
 		GameStarted = false
-		ShowNotification('~r~ERROR!~n~Only ' .. #MapTable.Vehicles .. ' Spawnpoints!~n~' .. 32 - #MapTable.Vehicles .. ' missing')
+		ShowNotification('~r~ERROR!~n~Only ' .. #MapTable.Vehicles .. ' Spawnpoints.~n~' .. MaximumPlayer - #MapTable.Vehicles .. ' missing!')
 		ShowNotification('~r~' .. GetLabelText('FMMC_RANDFAIL') .. '~y~' .. GetLabelText('USJ_FAILSAFE'))
 	end
 end

@@ -128,6 +128,7 @@ Citizen.CreateThread(function()
 		
 		HideHudAndRadarThisFrame()
 		BlockWeaponWheelThisFrame()
+		SetRadioToStationName('OFF')
 		SetCurrentPedWeapon(PlayerPedId(), GetHashKey('WEAPON_UNARMED'), true)
 
 		if NetworkIsHost() then
@@ -230,10 +231,10 @@ Citizen.CreateThread(function()
 				if #LivingPlayer > 1 then
 					SpectatingControl()
 				else
-					ScreenFadeOut(1500)
-					RemoveMyVehicle()
-					TeleportMyBodyAway()
 					if not DevTestMode then
+						ScreenFadeOut(1500)
+						RemoveMyVehicle()
+						TeleportMyBodyAway()
 						Respawn()
 					end
 				end
