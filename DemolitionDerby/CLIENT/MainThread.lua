@@ -260,6 +260,11 @@ Citizen.CreateThread(function()
 				end
 				if #LivingPlayer == 1 and not DevTestMode then
 					Finished(true)
+					if not IsPedDeadOrDying(PlayerPedId(), 1) then
+					    AddWin(1)
+					else
+					    AddLoss(1)
+					end
 				end
 			end
 			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then
