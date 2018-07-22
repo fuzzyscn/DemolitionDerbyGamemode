@@ -31,5 +31,4 @@ server_script {
 	'SERVER/MapsManager.lua',
 	'SERVER/ServerEvents.lua',
 	'SERVER/AFKPingKick.lua',
-	'SERVER/Stats.lua',
 }
