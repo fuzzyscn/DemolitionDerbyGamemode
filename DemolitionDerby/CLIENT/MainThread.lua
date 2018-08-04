@@ -1,6 +1,3 @@
-GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
-CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1
-
 local function TeleportMyBodyAway()
 	if not IsEntityAtCoord(PlayerPedId(), 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0, 1, 0) then
 		SetEntityVisible(PlayerPedId(), false, 0)
@@ -260,6 +257,11 @@ Citizen.CreateThread(function()
 				end
 				if #LivingPlayer == 1 and not DevTestMode then
 					Finished(true)
+					if not IsPedDeadOrDying(PlayerPedId(), 1) then		
+						AddWin(1)		
+					else		
+						AddLoss(1)		
+					end		
 				end
 			end
 			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then

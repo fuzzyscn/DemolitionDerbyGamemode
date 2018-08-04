@@ -1,17 +1,11 @@
-wins = 0;losses = 0;kills = 0
+wins = GetResourceKvpInt('dd:wins');losses =  GetResourceKvpInt('dd:losses');kills =  GetResourceKvpInt('dd:kills'); tempWins = 0; targetWins = 0
 
-AddEventHandler("playerSpawned", function()
-	TriggerServerEvent("DD:Server:DB:CheckAndInsert")
-	Citizen.Wait(2000)
-	TriggerServerEvent('DD:Server:UpdateWins')
-end)
+function AddWin(amount)     
+    SetResourceKvpInt('dd:wins', GetResourceKvpInt('dd:wins') + 1) 
+    wins = GetResourceKvpInt('dd:wins')
+end
 
-RegisterNetEvent('DD:Client:UpdateWins')
-AddEventHandler('DD:Client:UpdateWins', function(newWins)
-    wins = newWins
-end)
-
-RegisterNetEvent('DD:Client:UpdateLosses')
-AddEventHandler('DD:Client:UpdateLosses', function(newLosses)
-    losses = newLosses
-end)
+function AddLoss(amount)
+    SetResourceKvpInt('dd:losses', GetResourceKvpInt('dd:losses') + 1) 
+    wins = GetResourceKvpInt('dd:losses')
+end

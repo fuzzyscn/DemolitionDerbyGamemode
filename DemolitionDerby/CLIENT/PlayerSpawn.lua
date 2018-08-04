@@ -1,5 +1,3 @@
-SpawnMeNow = false; VehicleClass = 0
-
 function SpawnMe()
 	if IsPedInAnyVehicle(PlayerPedId(), false) then
 		SetEntityAsMissionEntity(GetVehiclePedIsIn(PlayerPedId(), false), true, true)

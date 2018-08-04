@@ -60,4 +60,6 @@ local function CheckForMapsFolder()
 	end
 end
 
-CheckForMapsFolder()
+Citizen.CreateThread(function()
+	CheckForMapsFolder()
+end)

@@ -1,10 +1,8 @@
 local CurrentlySpawnedProps = {}
 
 RegisterServerEvent('DD:Server:MapInformations')
---AddEventHandler('DD:Server:MapInformations', function(SpawnedProps, ReferenceZ, RandomVehicleClass)
 AddEventHandler('DD:Server:MapInformations', function(RandomVehicleClass)
 	CurrentlySpawnedProps = SpawnedProps
---	TriggerClientEvent('DD:Client:MapInformations', -1, CurrentlySpawnedProps, ReferenceZ, RandomVehicleClass)
 	TriggerClientEvent('DD:Client:MapInformations', -1, RandomVehicleClass)
 end)
 
@@ -20,13 +18,16 @@ end)
 
 RegisterServerEvent('DD:Server:GetRandomMap')
 AddEventHandler('DD:Server:GetRandomMap', function()
-	math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
-	local RandomMapName = Maps[math.random(#Maps)]
-	local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. RandomMapName, 'r')
-	local MapFileContent = MapFile:read('*a')
-	local MapFileContentToLUA = MapToLUA(MapFileContent)
-	MapFile:close()
-	TriggerClientEvent('DD:Client:SpawnMap', -1, RandomMapName, MapFileContentToLUA, source)
+	local Source = source
+	Citizen.CreateThread(function()
+		math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
+		local RandomMapName = Maps[math.random(#Maps)]
+		local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. RandomMapName, 'r')
+		local MapFileContent = MapFile:read('*a')
+		local MapFileContentToLUA = MapToLUA(MapFileContent)
+		MapFile:close()
+		TriggerClientEvent('DD:Client:SpawnMap', -1, RandomMapName, MapFileContentToLUA, Source)
+	end)
 end)
 
 RegisterServerEvent('DD:Server:Countdown')
@@ -65,12 +66,15 @@ end)
 
 RegisterServerEvent('DD:Server:LoadMap')
 AddEventHandler('DD:Server:LoadMap', function(Map)
-	if TableContainsValue(Maps, Map) then
-		local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map, 'r')
-		local MapFileContent = MapFile:read('*a')
-		local MapFileContentToLUA = MapToLUA(MapFileContent)
-		MapFile:close()
-		TriggerClientEvent('DD:Client:SpawnMap', -1, Map, MapFileContentToLUA, source)
-	end
+	local Source = source
+	Citizen.CreateThread(function()
+		if IsTableContainingValue(Maps, Map) then
+			local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map, 'r')
+			local MapFileContent = MapFile:read('*a')
+			local MapFileContentToLUA = MapToLUA(MapFileContent)
+			MapFile:close()
+			TriggerClientEvent('DD:Client:SpawnMap', -1, Map, MapFileContentToLUA, Source)
+		end
+	end)
 end)
 

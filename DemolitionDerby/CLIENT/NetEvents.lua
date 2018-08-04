@@ -27,21 +27,14 @@ end)
 
 RegisterNetEvent('DD:Client:SpawnMap')
 AddEventHandler('DD:Client:SpawnMap', function(MapName, MapTable, Source)
+	MapReceived[1] = true
 	MapReceived[2] = MapName
 	MapReceived[3] = MapTable
 	MapReceived[4] = Source
---	if GetPlayerServerId(PlayerId()) == Source then
-		MapReceived[1] = true
---[[	else
-		MapReceived[1] = false
-	end]]
 end)
 
 RegisterNetEvent('DD:Client:MapInformations')
 AddEventHandler('DD:Client:MapInformations', function(RandomVehicleClass)
---AddEventHandler('DD:Client:MapInformations', function(Props, RefZ, RandomVehicleClass)
---	ReferenceZ = RefZ
---	SpawnedProps = Props
 	VehicleClass = RandomVehicleClass
 	
 	MySpawnPosition = MapReceived[3].Vehicles[PlayerId() + 1]

@@ -7,7 +7,7 @@ TableContainsKey = function(Table, SearchedFor)
     return false
 end
 
-TableContainsValue = function(Table, SearchedFor)
+IsTableContainingValue = function(Table, SearchedFor)
 	for Key, Value in pairs(Table) do
 		if Value == SearchedFor then
 			return true

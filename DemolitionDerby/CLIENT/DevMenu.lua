@@ -1,4 +1,3 @@
-IsDev = false; AvailableMaps = {}; CurrentMap = ''; DevTestMode = false
 Pool = MenuPool.New()
 MainMenu = UIMenu.New('Dev Menu', '~b~Various options for development/testing.')
 Pool:Add(MainMenu)

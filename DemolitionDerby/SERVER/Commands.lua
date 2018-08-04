@@ -1,11 +1,11 @@
 RegisterCommand("bugreport", function(Source, Arguments, RawCommand)
 	local date = os.date('*t')
-	if date.month < 10 then date.month = '0' .. tostring(date.month) end
-	if date.day < 10 then date.day = '0' .. tostring(date.day) end
-	if date.hour < 10 then date.hour = '0' .. tostring(date.hour) end
-	if date.min < 10 then date.min = '0' .. tostring(date.min) end
-	if date.sec < 10 then date.sec = '0' .. tostring(date.sec) end
-
+	for Key, Value in pairs(date) do
+		if type(Value) ~= 'boolean' and Value < 10 then
+			date[Key] = '0' .. tostring(date[Key])
+		end
+	end
+	
 	local Content = ''
 	local LatestBugReport = LoadResourceFile(GetCurrentResourceName(), 'BugReports' .. GetOSSep() .. 'BugReport_v' .. CurrentVersion .. '_d' .. date.day .. '.' .. date.month .. '.' .. date.year .. '.txt')
 	if LatestBugReport then

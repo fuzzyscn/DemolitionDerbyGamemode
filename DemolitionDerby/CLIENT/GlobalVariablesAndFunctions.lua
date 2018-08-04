@@ -1,3 +1,14 @@
+GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
+CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1
+
+wins = 0;losses = 0;kills = 0
+
+SpawnMeNow = false; VehicleClass = 0
+
+SpawnedPropsLocal = {}; SpawnedProps = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
+
+IsDev = false; AvailableMaps = {}; CurrentMap = ''; DevTestMode = false
+
 MaximumPlayer = 32
 
 function TableContainsKey(Table, SearchedFor)
@@ -9,7 +20,7 @@ function TableContainsKey(Table, SearchedFor)
     return false
 end
 
-function TableContainsValue(Table, SearchedFor)
+function IsTableContainingValue(Table, SearchedFor)
 	for Key, Value in pairs(Table) do
 		if Value == SearchedFor then
 			return true
