@@ -1,8 +1,5 @@
-local CurrentlySpawnedProps = {}
-
 RegisterServerEvent('DD:Server:MapInformations')
 AddEventHandler('DD:Server:MapInformations', function(RandomVehicleClass)
-	CurrentlySpawnedProps = SpawnedProps
 	TriggerClientEvent('DD:Client:MapInformations', -1, RandomVehicleClass)
 end)
 
@@ -74,6 +71,8 @@ AddEventHandler('DD:Server:LoadMap', function(Map)
 			local MapFileContentToLUA = MapToLUA(MapFileContent)
 			MapFile:close()
 			TriggerClientEvent('DD:Client:SpawnMap', -1, Map, MapFileContentToLUA, Source)
+		else
+			print('ERROR!\nMap not found!')
 		end
 	end)
 end)

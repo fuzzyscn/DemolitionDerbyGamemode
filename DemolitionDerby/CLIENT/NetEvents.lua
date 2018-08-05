@@ -27,10 +27,10 @@ end)
 
 RegisterNetEvent('DD:Client:SpawnMap')
 AddEventHandler('DD:Client:SpawnMap', function(MapName, MapTable, Source)
-	MapReceived[1] = true
 	MapReceived[2] = MapName
 	MapReceived[3] = MapTable
 	MapReceived[4] = Source
+	MapReceived[1] = true
 end)
 
 RegisterNetEvent('DD:Client:MapInformations')

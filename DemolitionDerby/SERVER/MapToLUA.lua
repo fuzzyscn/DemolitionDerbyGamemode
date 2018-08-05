@@ -1,16 +1,17 @@
 local function GetMenyooSub(String)
 	local StringSplitted = StringSplit(String, '\n')
-	local NewString = ''
-	for k, Line in ipairs(StringSplitted) do
-		if k >= 19 and k < #StringSplitted then
-			NewString = NewString .. Line .. '\n'
-		end
+	for Index = 18, 1, -1 do
+		table.remove(StringSplitted, 1)
 	end
-	return NewString
+	table.remove(StringSplitted, #StringSplitted)
+	if StringSplitted[#StringSplitted]:find('SpoonerPlacements') then
+		table.remove(StringSplitted, #StringSplitted)
+	end
+	return table.concat(StringSplitted, "\n")
 end
 
 local function MenyooToLUA(String)
-	local StringSplitted = StringSplit(String, '\n')
+	local StringSplitted = StringSplit(GetMenyooSub(String), '\n')
 	local ReturnTable = {['Props'] = {}, ['Vehicles'] = {}};
 	local TempTable = {}; PlacementStart = false
 	for k, Line in ipairs(StringSplitted) do
@@ -95,7 +96,6 @@ end
 function MapToLUA(String)
 	local Table
 	if String:find('SpoonerPlacements') then
-		String = GetMenyooSub(String)
 		Table = MenyooToLUA(String)
 	else
 		Table = MapEditorToLUA(String)

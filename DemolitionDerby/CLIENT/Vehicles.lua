@@ -210,7 +210,6 @@ Vehicles = {
 			'ROCOTO',
 			'ROMERO',
 			'RUINER',
-			'RUINER3',
 			'RUMPO',
 			'RUMPO2',
 			'RUMPO3',
