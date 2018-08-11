@@ -4,9 +4,8 @@ resource_manifest_version '05cfa83c-a124-4cfa-a768-c24a5811d8f9'
 
 description 'Demolition Derby - A gamemode by Scotty & Flatracer'
 
-dependency 'NativeUI'
-
 client_script {
+	'@NativeUI/NativeUI.lua',
 	'CLIENT/Scaleform.lua',
 	'CLIENT/Peds.lua',
 	'CLIENT/Vehicles.lua',
