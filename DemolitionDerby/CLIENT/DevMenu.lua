@@ -30,9 +30,14 @@ function AddMenuOptionItem(Menu)
     Menu:AddItem(StopCurrentGame)
     Menu.OnItemSelect = function(Sender, Item, Index)
         if Item == ForceRestart then
+			if GameStarted then
+				TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], DevTestMode)
+			end
 			TriggerServerEvent('DD:Server:LoadMap', CurrentMap)
         elseif Item == StopCurrentGame then
-			TriggerServerEvent('DD:Server:GameFinished')
+			if GameStarted then
+				TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], DevTestMode)
+			end
         end
     end
 end

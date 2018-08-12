@@ -68,7 +68,7 @@ local function MapEditorToLUA(String)
 					if Rotation then
 						Key = 'r' .. Key
 					end
-					if TableContainsKey(Replace, Key) then
+					if IsTableContainingKey(Replace, Key) then
 						Key = Replace[Key]
 					end
 					if KeyBegin ~= ValueEnd then
@@ -95,7 +95,7 @@ end
 
 function MapToLUA(String)
 	local Table
-	if String:find('SpoonerPlacements') then
+	if String:find('<SpoonerPlacements>') then
 		Table = MenyooToLUA(String)
 	else
 		Table = MapEditorToLUA(String)

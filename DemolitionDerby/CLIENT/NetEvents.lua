@@ -15,13 +15,15 @@ end)
 
 RegisterNetEvent('DD:Client:GameFinished')
 AddEventHandler('DD:Client:GameFinished', function()
-	GameStarted = false; GameRunning = false; StartState = nil;
-	ReadyPlayers = {}; MidGameJoiner = false; AFKKickEnabled = false;
+	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1;
+	IsAlive = true; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; DoCountdown = false;
+	ScaleformCheckValue = -1; FinishTriggered = false; Leaderboard = {}; LossAdded = false; WinAdded = false;
+	ShowLeaderboard = false;
+	
 	if NetworkIsInSpectatorMode() then
 		Spectate(false, PlayerId())
 	end
 	RemoveMyVehicle()
-	CurrentlySpectating = -1
 	Respawn()
 end)
 
@@ -65,6 +67,8 @@ AddEventHandler('DD:Client:IsGameRunningAnswer', function(State)
 	GameStarted = State; GameRunning = State; MidGameJoiner = State
 	if not GameStarted then
 		Respawn()
+	else
+		TriggerServerEvent('DD:Server:GetLeaderboard')
 	end
 end)
 
@@ -98,5 +102,10 @@ AddEventHandler('onClientGameTypeStart', function()
 	else
 		TriggerEvent('DD:Client:IsGameRunningAnswer', false)
 	end
+end)
+
+RegisterNetEvent('DD:Client:UpdateLeaderboard')
+AddEventHandler('DD:Client:UpdateLeaderboard', function(LB)
+	Leaderboard = LB
 end)
 

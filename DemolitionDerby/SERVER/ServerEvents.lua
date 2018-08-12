@@ -1,3 +1,8 @@
+RegisterServerEvent('DD:Server:ToRCON')
+AddEventHandler('DD:Server:ToRCON', function(String)
+	print(String)
+end)
+
 RegisterServerEvent('DD:Server:MapInformations')
 AddEventHandler('DD:Server:MapInformations', function(RandomVehicleClass)
 	TriggerClientEvent('DD:Client:MapInformations', -1, RandomVehicleClass)
@@ -33,7 +38,10 @@ AddEventHandler('DD:Server:Countdown', function(State)
 end)
 
 RegisterServerEvent('DD:Server:GameFinished')
-AddEventHandler('DD:Server:GameFinished', function()
+AddEventHandler('DD:Server:GameFinished', function(MapName, IsDevMode)
+	if not IsDevMode then
+		SaveLeaderboard(MapName)
+	end
 	TriggerClientEvent('DD:Client:GameFinished', -1)
 end)
 
@@ -70,10 +78,37 @@ AddEventHandler('DD:Server:LoadMap', function(Map)
 			local MapFileContent = MapFile:read('*a')
 			local MapFileContentToLUA = MapToLUA(MapFileContent)
 			MapFile:close()
-			TriggerClientEvent('DD:Client:SpawnMap', -1, Map, MapFileContentToLUA, Source)
+			LoadLeaderboard(Map, MapFileContentToLUA, Source)
 		else
 			print('ERROR!\nMap not found!')
 		end
 	end)
+end)
+
+RegisterServerEvent('DD:Server:UpdateLeaderboard')
+AddEventHandler('DD:Server:UpdateLeaderboard', function(IsWin)
+	local Source = source
+	local Identifier = GetIdentifier(Source, 'license')
+	
+	if not IsTableContainingKey(Leaderboard, Identifier) then
+		Leaderboard[Identifier] = {['Name'] = GetPlayerName(Source), ['Won'] = 0, ['Lost'] = 0}
+	end
+	
+	if not Leaderboard[Identifier].Name or Leaderboard[Identifier].Name ~= GetPlayerName(Source) then
+		Leaderboard[Identifier].Name = GetPlayerName(Source)
+	end
+	
+	if IsWin then
+		Leaderboard[Identifier].Won = Leaderboard[Identifier].Won + 1
+	else
+		Leaderboard[Identifier].Lost = Leaderboard[Identifier].Lost + 1
+	end
+	
+	TriggerClientEvent('DD:Client:UpdateLeaderboard', -1, Leaderboard)
+end)
+
+RegisterServerEvent('DD:Server:GetLeaderboard')
+AddEventHandler('DD:Server:GetLeaderboard', function()
+	TriggerClientEvent('DD:Client:UpdateLeaderboard', source, Leaderboard)
 end)
 

@@ -21,10 +21,6 @@ Vehicles = {
 			'BISON3',
 			'BJXL',
 			'BLADE',
-			'BLAZER',
-			'BLAZER2',
-			'BLAZER3',
-			'BLAZER4',
 			'BLISTA',
 			'BLISTA2',
 			'BLISTA3',
@@ -305,3 +301,4 @@ Vehicles = {
 			'ZION2',
 			'ZTYPE',
 		   }
+

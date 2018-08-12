@@ -1,17 +1,22 @@
-GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false;
-CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1
+GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false; IsAlive = true;
+CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1; FinishTriggered = false;
+DoCountdown = false; 
 
-wins = 0;losses = 0;kills = 0
+Leaderboard = {}; ShowLeaderboard = false
+
+LossAdded = false; WinAdded = false
+
+wins = 0; losses = 0; kills = 0
 
 SpawnMeNow = false; VehicleClass = 0
 
-SpawnedPropsLocal = {}; SpawnedProps = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
+SpawnedProps = {}; SpawnedPickups = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
 
 IsDev = false; AvailableMaps = {}; CurrentMap = ''; DevTestMode = false
 
 MaximumPlayer = 32
 
-function TableContainsKey(Table, SearchedFor)
+function IsTableContainingKey(Table, SearchedFor)
 	for Key, Value in pairs(Table) do
 		if Key == SearchedFor then
 			return true
@@ -276,9 +281,28 @@ function PreIBUse(ScaleformName, Controls)
 end
 
 function IsPlayerAbleToPlay(Player)
-	if not IsPlayerDead(Player) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ZERO')) then
+	if Player ~= nil and not IsPlayerDead(Player) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ZERO')) then
 		return true
 	end
 	return false
+end
+
+function IsRepairPickup(Pickup)
+	if tonumber(Pickup) == 0xF145F439 or tonumber(Pickup) == 0xE6FA7770 or tonumber(Pickup) == 0x48AC6542 then
+		return true
+	end
+	return false
+end
+
+function IsBoostPickup(Pickup)
+	if tonumber(Pickup) == 0x537308AE or tonumber(Pickup) == 0x65EAF4B2 then
+		return true
+	end
+	return false
+end
+
+function GetActualMapName()
+	local MapNameDotPosition = MapReceived[2]:reverse():find('%.')
+	return MapReceived[2]:reverse():sub(MapNameDotPosition + 1, MapReceived[2]:len()):reverse()
 end
 

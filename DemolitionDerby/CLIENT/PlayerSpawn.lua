@@ -45,7 +45,8 @@ function SpawnMe()
 	TriggerServerEvent('DD:Server:Ready', PlayerId())
 	
 	GameStarted = true
-	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', MapReceived[2]))
+	
+	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName()))
 end
 
 Citizen.CreateThread(function()

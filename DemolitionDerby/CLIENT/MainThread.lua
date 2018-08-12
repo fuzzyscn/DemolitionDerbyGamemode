@@ -42,7 +42,9 @@ local function NextPlayer(LivingPlayer, CurrentKey)
 end
 
 local function SpectatingControl()
-	AttachEntityToEntity(PlayerPedId(), GetPlayerPed(CurrentlySpectating), 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, true, 1, false)
+	if not IsEntityAttachedToEntity(PlayerPedId(), GetPlayerPed(CurrentlySpectating)) then
+		AttachEntityToEntity(PlayerPedId(), GetPlayerPed(CurrentlySpectating), 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, true, 1, false)
+	end
 	
 	local LivingPlayer = GetLivingPlayers()
 	local CurrentKey = GetKeyInTable(LivingPlayer, CurrentlySpectating)
@@ -78,19 +80,19 @@ local function Countdown(State)
 		DrawScaleformMovieFullscreen(CountdownScaleform, 255, 255, 255, 255)
 	else
 		if not GameRunning then
+			DoCountdown = false
 			GameRunning = true
 		end
 	end
 end
 
 local function Finished(IsLastPlayer)
-	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}
 	if IsLastPlayer then
 		ScreenFadeOut(1500)
 		RemoveMyVehicle()
 		TeleportMyBodyAway()
 	end
-	TriggerServerEvent('DD:Server:GameFinished')
+	TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], DevTestMode)
 end
 
 Citizen.CreateThread(function()
@@ -203,7 +205,8 @@ Citizen.CreateThread(function()
 			end
 			
 			local Timer = GetGameTimer(); State = 3
-			while not GameRunning do
+			DoCountdown = true
+			while not GameRunning and DoCountdown do
 				Citizen.Wait(0)
 				if NetworkIsHost() then
 					if ((GetGameTimer() - Timer) >= (1500 * State)) and not (State == 0) then
@@ -217,7 +220,60 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif GameStarted and GameRunning then
-			if not IsPlayerAbleToPlay(PlayerId()) then
+			if IsControlJustPressed(1, 56) then
+				ShowLeaderboard = not ShowLeaderboard
+			end
+			if IsAlive then
+				IsAlive = IsPlayerAbleToPlay(PlayerId())
+				if not IsPedInAnyVehicle(PlayerPedId(), false) then
+					SetEntityHealth(PlayerPedId(), 0)
+				end
+				if not AFKKickEnabled then
+					SetEntityInvincible(PlayerPedId(), false)
+					FreezeEntityPosition(PlayerPedId(), false)
+					FreezeEntityPosition(GetVehiclePedIsIn(PlayerPedId(), false), false)
+					AFKKickEnabled = true
+				end
+				
+				for Key, Value in ipairs(SpawnedPickups) do
+					if DoesPickupExist(Value[2]) then
+						if HasPickupBeenCollected(Value[2]) then
+							if IsRepairPickup(Value[1]) then
+								SetVehicleFixed(GetVehiclePedIsIn(PlayerPedId(), false))
+								SetVehicleDirtLevel(GetVehiclePedIsIn(PlayerPedId(), false), 0.0)
+							elseif IsBoostPickup(Value[1]) then
+								local SpeedVector = GetEntitySpeedVector(GetVehiclePedIsIn(PlayerPedId(), false), true)
+								if SpeedVector.y > 0.0 then
+									SetVehicleForwardSpeed(GetVehiclePedIsIn(PlayerPedId(), false), 60.0)
+								end
+							end
+						end
+					else
+						table.remove(SpawnedPickups, Key)
+					end
+				end
+				SetPedConfigFlag(PlayerPedId(), 32, false)
+
+				local MyCoords = GetEntityCoords(PlayerPedId(), true)
+				
+				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(GetVehiclePedIsIn(PlayerPedId(), false)) then
+					NetworkExplodeVehicle(GetVehiclePedIsIn(PlayerPedId(), false), true, true, 0)
+				end
+				if #LivingPlayer == 1 and not DevTestMode then
+					if not WinAdded then
+						TriggerServerEvent('DD:Server:UpdateLeaderboard', true)
+						WinAdded = true
+					end
+					if not FinishTriggered then
+						Finished(true)
+						FinishTriggered = true
+					end
+				end
+			else
+				if not LossAdded and not MidGameJoiner and not DevTestMode then
+					TriggerServerEvent('DD:Server:UpdateLeaderboard', false)
+					LossAdded = true
+				end
 				if not NetworkIsInSpectatorMode() and #LivingPlayer > 1 then
 					ScreenFadeOut(1500)
 					RemoveMyVehicle()
@@ -232,40 +288,16 @@ Citizen.CreateThread(function()
 						ScreenFadeOut(1500)
 						RemoveMyVehicle()
 						TeleportMyBodyAway()
-						Respawn()
-					end
-				end
-			else
-				if not IsPedInAnyVehicle(PlayerPedId(), false) then
-					SetEntityHealth(PlayerPedId(), 0)
-				end
-				if not AFKKickEnabled then
-					AFKKickEnabled = true
-				end
-				SetPedCanBeKnockedOffVehicle(PlayerPedId(), 1)
-				SetPedConfigFlag(PlayerPedId(), 32, false)
-				if IsPedRagdoll(PlayerPedId()) then
-					SetPedIntoVehicle(PlayerPedId(), GetVehiclePedIsIn(PlayerPedId(), false), -1)
-				end
-				SetEntityInvincible(PlayerPedId(), false)
-				FreezeEntityPosition(PlayerPedId(), false)
-				FreezeEntityPosition(GetVehiclePedIsIn(PlayerPedId(), false), false)
-				local MyCoords = GetEntityCoords(PlayerPedId(), true)
-				
-				if ReferenceZ - MyCoords.z > 10.0 then
-					NetworkExplodeVehicle(GetVehiclePedIsIn(PlayerPedId(), false), true, true, 0)
-				end
-				if #LivingPlayer == 1 and not DevTestMode then
-					Finished(true)
-					if not IsPedDeadOrDying(PlayerPedId(), 1) then
-					    AddWin(1)
-					else
-					    AddLoss(1)
+--						Respawn()
 					end
 				end
 			end
+			
 			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then
-				Finished(false)
+				if not FinishTriggered then
+					Finished(false)
+					FinishTriggered = true
+				end
 			end
 		end
 	end

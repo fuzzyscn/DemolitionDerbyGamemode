@@ -26,11 +26,11 @@ end
 
 local function CheckForDefaultMap()
 	for i = 1, 100 do
-		local DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'DefaultMap' .. i .. '.xml', 'r')
+		local DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'Default Map ' .. i .. '.xml', 'r')
 		if not DefaultFile then
 			local BackupMap = LoadResourceFile(GetCurrentResourceName(), 'SERVER' .. GetOSSep() .. 'BackupMaps' .. GetOSSep() .. 'BackupMap' .. i .. '.xml')
 			if BackupMap then
-				DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'DefaultMap' .. i .. '.xml', 'w+')
+				DefaultFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. 'Default Map ' .. i .. '.xml', 'w+')
 				DefaultFile:write(BackupMap)
 				DefaultFile:flush()
 				DefaultFile:close()

@@ -4,6 +4,10 @@ resource_manifest_version '05cfa83c-a124-4cfa-a768-c24a5811d8f9'
 
 description 'Demolition Derby - A gamemode by Scotty & Flatracer'
 
+dependencies {
+    'NativeUI',
+}
+
 client_script {
 	'@NativeUI/NativeUI.lua',
 	'CLIENT/Scaleform.lua',
@@ -20,15 +24,17 @@ client_script {
 	'CLIENT/AFKPingKick.lua',
 	'CLIENT/UI.lua',
 	'CLIENT/Stats.lua',
+	'CLIENT/Leaderboard.lua',
 }
 
 server_script {
 	'SERVER/GeneralStuff.lua',
-	'SERVER/GlobalFunctions.lua',
+	'SERVER/GlobalVariablesAndFunctions.lua',
 	'SERVER/Commands.lua',
 	'SERVER/SlotReserving.lua',
 	'SERVER/MapToLUA.lua',
 	'SERVER/MapsManager.lua',
 	'SERVER/ServerEvents.lua',
 	'SERVER/AFKPingKick.lua',
+	'SERVER/Leaderboard.lua',
 }
