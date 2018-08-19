@@ -19,7 +19,7 @@ AddEventHandler('DD:Client:GameFinished', function()
 	IsAlive = true; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; DoCountdown = false;
 	ScaleformCheckValue = -1; FinishTriggered = false; Leaderboard = {}; LossAdded = false; WinAdded = false;
 	ShowLeaderboard = false;
-	
+
 	if NetworkIsInSpectatorMode() then
 		Spectate(false, PlayerId())
 	end
@@ -38,7 +38,7 @@ end)
 RegisterNetEvent('DD:Client:MapInformations')
 AddEventHandler('DD:Client:MapInformations', function(RandomVehicleClass)
 	VehicleClass = RandomVehicleClass
-	
+
 	MySpawnPosition = MapReceived[3].Vehicles[PlayerId() + 1]
 	if MySpawnPosition then
 		SpawnMeNow = true

@@ -161,9 +161,11 @@ function Spectate(Toggle, Player)
 end
 
 function RemoveMyVehicle()
-	if IsPedInAnyVehicle(PlayerPedId(), true) then
-		SetEntityAsMissionEntity(GetVehiclePedIsIn(PlayerPedId(), false), true, true)
-		DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), false))
+	local Ped = PlayerPedId()
+	if IsPedInAnyVehicle(Ped, true) then
+		local Vehicle = GetVehiclePedIsIn(Ped, false)
+		SetEntityAsMissionEntity(Vehicle, true, true)
+		DeleteEntity(Vehicle)
 	end
 end
 
@@ -197,7 +199,7 @@ function Respawn()
 	if IsEntityAttached(PlayerPedId()) then
 		DetachEntity(PlayerPedId(), false, true)
 	end
-	
+
 	SetPlayerControl(PlayerId(), false, false)
 	SetPlayerInvincible(PlayerId(), true)
 
@@ -220,7 +222,7 @@ function Respawn()
 	RequestCollisionAtCoord(SpawnValues.x, SpawnValues.y, SpawnValues.z)
 	SetEntityCoordsNoOffset(PlayerPedId(), SpawnValues.x, SpawnValues.y, SpawnValues.z, false, false, false, true)
 	NetworkResurrectLocalPlayer(SpawnValues.x, SpawnValues.y, SpawnValues.z, SpawnValues.h, true, true, false)
-	
+
 	ClearPedTasksImmediately(PlayerPedId())
 
 	while not HasCollisionLoadedAroundEntity(PlayerPedId()) do
@@ -245,10 +247,10 @@ function PreIBUse(ScaleformName, Controls)
 	while not HasScaleformMovieLoaded(ScaleformHandle) do
 		Citizen.Wait(0)
 	end
-	
+
 	PushScaleformMovieFunction(ScaleformHandle, "CLEAR_ALL")
 	PopScaleformMovieFunctionVoid()
-	
+
 	PushScaleformMovieFunction(ScaleformHandle, "SET_CLEAR_SPACE")
 	PushScaleformMovieFunctionParameterInt(200)
 	PopScaleformMovieFunctionVoid()

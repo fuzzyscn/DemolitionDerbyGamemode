@@ -28,7 +28,7 @@ AddEventHandler('DD:Server:GetRandomMap', function()
 		local MapFileContent = MapFile:read('*a')
 		local MapFileContentToLUA = MapToLUA(MapFileContent)
 		MapFile:close()
-		TriggerClientEvent('DD:Client:SpawnMap', -1, RandomMapName, MapFileContentToLUA, Source)
+		LoadLeaderboard(RandomMapName, MapFileContentToLUA, Source)
 	end)
 end)
 
@@ -89,21 +89,19 @@ RegisterServerEvent('DD:Server:UpdateLeaderboard')
 AddEventHandler('DD:Server:UpdateLeaderboard', function(IsWin)
 	local Source = source
 	local Identifier = GetIdentifier(Source, 'license')
-	
+
 	if not IsTableContainingKey(Leaderboard, Identifier) then
 		Leaderboard[Identifier] = {['Name'] = GetPlayerName(Source), ['Won'] = 0, ['Lost'] = 0}
 	end
-	
-	if not Leaderboard[Identifier].Name or Leaderboard[Identifier].Name ~= GetPlayerName(Source) then
-		Leaderboard[Identifier].Name = GetPlayerName(Source)
-	end
-	
+
+	Leaderboard[Identifier].Name = GetPlayerName(Source)
+
 	if IsWin then
 		Leaderboard[Identifier].Won = Leaderboard[Identifier].Won + 1
 	else
 		Leaderboard[Identifier].Lost = Leaderboard[Identifier].Lost + 1
 	end
-	
+
 	TriggerClientEvent('DD:Client:UpdateLeaderboard', -1, Leaderboard)
 end)
 

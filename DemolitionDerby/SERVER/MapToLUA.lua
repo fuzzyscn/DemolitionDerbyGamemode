@@ -48,6 +48,10 @@ local function MapEditorToLUA(String)
 			elseif Line:find('</MapObject>') then
 				if TempTable.Type == 'Prop' then
 					table.insert(ReturnTable.Props, TempTable)
+				elseif TempTable.Type == 'Pickup' and TempTable.ModelHash == '160266735' then
+					TempTable.Type = 'Prop'
+					TempTable.ModelHash = '0xe6fa7770'
+					table.insert(ReturnTable.Props, TempTable)
 				elseif TempTable.Type == 'Vehicle' then
 					table.insert(ReturnTable.Vehicles, TempTable)
 				end

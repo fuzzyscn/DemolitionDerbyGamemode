@@ -1,15 +1,15 @@
 Citizen.CreateThread(function()
 	local PlayerTags = {}
-	
+
 	while true do
 		Citizen.Wait(0)
-		
+
 		for Player = 0, MaximumPlayer - 1 do
 			if Player ~= PlayerId() then
 				local IsConnected = NetworkIsPlayerConnected(Player)
 				local IsAbleToPlay = IsPlayerAbleToPlay(Player)
 				local IsTagActive = IsMpGamerTagActive(PlayerTags[Player])
-				
+
 				if IsConnected and (not PlayerTags[Player] or (PlayerTags[Player] and not IsTagActive)) then
 					PlayerTags[Player] = CreateMpGamerTag(GetPlayerPed(Player), GetPlayerName(Player), false, false, '', false)
 				elseif IsConnected and PlayerTags[Player] and IsTagActive and IsAbleToPlay then

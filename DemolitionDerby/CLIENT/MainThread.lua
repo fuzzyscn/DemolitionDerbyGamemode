@@ -1,8 +1,9 @@
 local function TeleportMyBodyAway()
-	if not IsEntityAtCoord(PlayerPedId(), 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0, 1, 0) then
-		SetEntityVisible(PlayerPedId(), false, 0)
-		SetEntityCollision(PlayerPedId(), false, 0)
-		SetEntityCoords(PlayerPedId(), 0.0, 0.0, 0.0, false, false, false, false)
+	local Ped = PlayerPedId()
+	if not IsEntityAtCoord(Ped, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0, 1, 0) then
+		SetEntityVisible(Ped, false, 0)
+		SetEntityCollision(Ped, false, 0)
+		SetEntityCoords(Ped, 0.0, 0.0, 0.0, false, false, false, false)
 	end
 end
 
@@ -18,7 +19,6 @@ local function SetSpectating()
 end
 
 local function PreviousPlayer(LivingPlayer, CurrentKey)
-	local LivingPlayer = GetLivingPlayers()
 	if CurrentKey and CurrentKey == 1 then
 		CurrentlySpectating = LivingPlayer[#LivingPlayer]
 	else
@@ -30,7 +30,6 @@ local function PreviousPlayer(LivingPlayer, CurrentKey)
 end
 
 local function NextPlayer(LivingPlayer, CurrentKey)
-	local LivingPlayer = GetLivingPlayers()
 	if CurrentKey and CurrentKey < #LivingPlayer then
 		CurrentlySpectating = LivingPlayer[CurrentKey + 1]
 	else
@@ -42,20 +41,21 @@ local function NextPlayer(LivingPlayer, CurrentKey)
 end
 
 local function SpectatingControl()
-	if not IsEntityAttachedToEntity(PlayerPedId(), GetPlayerPed(CurrentlySpectating)) then
-		AttachEntityToEntity(PlayerPedId(), GetPlayerPed(CurrentlySpectating), 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, true, 1, false)
+	local Ped = PlayerPedId(); PedSpectating = GetPlayerPed(CurrentlySpectating)
+	if not IsEntityAttachedToEntity(Ped, PedSpectating) then
+		AttachEntityToEntity(Ped, PedSpectating, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, true, 1, false)
 	end
-	
+
 	local LivingPlayer = GetLivingPlayers()
 	local CurrentKey = GetKeyInTable(LivingPlayer, CurrentlySpectating)
-	
+
 	if not IsPlayerAbleToPlay(CurrentlySpectating) then
 		NextPlayer(LivingPlayer, CurrentKey)
 	end
-	
+
 	ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", {{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
 	DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
-	
+
 	if IsControlJustPressed(1, 174) then
 		PreviousPlayer(LivingPlayer, CurrentKey)
 	elseif IsControlJustPressed(1, 175) then
@@ -87,7 +87,12 @@ local function Countdown(State)
 end
 
 local function Finished(IsLastPlayer)
+	
 	if IsLastPlayer then
+		GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1;
+		IsAlive = true; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; DoCountdown = false;
+		ScaleformCheckValue = -1; ShowLeaderboard = false;
+
 		ScreenFadeOut(1500)
 		RemoveMyVehicle()
 		TeleportMyBodyAway()
@@ -106,7 +111,7 @@ Citizen.CreateThread(function()
 			end
 			RescueFadedOutScreen = false
 		end
-		
+
 		if not RequestingDone then
 			local CurrentSlot = 0
 			for i, CAT in ipairs(AT) do
@@ -124,7 +129,7 @@ Citizen.CreateThread(function()
 			end
 			RequestingDone = true
 		end
-		
+
 		HideHudAndRadarThisFrame()
 		BlockWeaponWheelThisFrame()
 		SetRadioToStationName('OFF')
@@ -156,16 +161,17 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 		Players = GetPlayers()
 		LivingPlayer = GetLivingPlayers()
-		
+		local Ped = PlayerPedId(); Player = PlayerId()
+
 		if not GameStarted and not GameRunning then
 			if IsScreenFadedOut() then
 				ScreenFadeIn(1500)
 			end
-			
-			if IsPlayerAbleToPlay(PlayerId()) then
-				SetEntityInvincible(PlayerPedId(), true)
+
+			if IsPlayerAbleToPlay(Player) then
+				SetEntityInvincible(Ped, true)
 			end
-			
+
 			if #Players >= NeededPlayer then
 				if NetworkIsHost() then
 					if ScaleformCheckValue ~= 1 and not MainMenu:Visible() then
@@ -188,7 +194,7 @@ Citizen.CreateThread(function()
 				DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 			end			
 		elseif GameStarted and not GameRunning then
-			SetEntityInvincible(PlayerPedId(), false)
+			SetEntityInvincible(Ped, false)
 			local WaitingTime = GetGameTimer(); Waiting = true
 			while Waiting do
 				Citizen.Wait(0)
@@ -203,7 +209,7 @@ Citizen.CreateThread(function()
 					Waiting = false
 				end
 			end
-			
+
 			local Timer = GetGameTimer(); State = 3
 			DoCountdown = true
 			while not GameRunning and DoCountdown do
@@ -220,31 +226,34 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif GameStarted and GameRunning then
+			local Vehicle = GetVehiclePedIsIn(Ped, false)
 			if IsControlJustPressed(1, 56) then
 				ShowLeaderboard = not ShowLeaderboard
 			end
 			if IsAlive then
-				IsAlive = IsPlayerAbleToPlay(PlayerId())
-				if not IsPedInAnyVehicle(PlayerPedId(), false) then
-					SetEntityHealth(PlayerPedId(), 0)
+				IsAlive = IsPlayerAbleToPlay(Player)
+
+				if not IsPedInAnyVehicle(Ped, false) then
+					SetEntityHealth(Ped, 0)
 				end
+
 				if not AFKKickEnabled then
-					SetEntityInvincible(PlayerPedId(), false)
-					FreezeEntityPosition(PlayerPedId(), false)
-					FreezeEntityPosition(GetVehiclePedIsIn(PlayerPedId(), false), false)
+					SetEntityInvincible(Ped, false)
+					FreezeEntityPosition(Ped, false)
+					FreezeEntityPosition(Vehicle, false)
 					AFKKickEnabled = true
 				end
-				
+
 				for Key, Value in ipairs(SpawnedPickups) do
 					if DoesPickupExist(Value[2]) then
 						if HasPickupBeenCollected(Value[2]) then
 							if IsRepairPickup(Value[1]) then
-								SetVehicleFixed(GetVehiclePedIsIn(PlayerPedId(), false))
-								SetVehicleDirtLevel(GetVehiclePedIsIn(PlayerPedId(), false), 0.0)
+								SetVehicleFixed(Vehicle)
+								SetVehicleDirtLevel(Vehicle, 0.0)
 							elseif IsBoostPickup(Value[1]) then
-								local SpeedVector = GetEntitySpeedVector(GetVehiclePedIsIn(PlayerPedId(), false), true)
+								local SpeedVector = GetEntitySpeedVector(Vehicle, true)
 								if SpeedVector.y > 0.0 then
-									SetVehicleForwardSpeed(GetVehiclePedIsIn(PlayerPedId(), false), 60.0)
+									SetVehicleForwardSpeed(Vehicle, 60.0)
 								end
 							end
 						end
@@ -252,14 +261,16 @@ Citizen.CreateThread(function()
 						table.remove(SpawnedPickups, Key)
 					end
 				end
-				SetPedConfigFlag(PlayerPedId(), 32, false)
 
-				local MyCoords = GetEntityCoords(PlayerPedId(), true)
-				
-				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(GetVehiclePedIsIn(PlayerPedId(), false)) then
-					NetworkExplodeVehicle(GetVehiclePedIsIn(PlayerPedId(), false), true, true, 0)
+				SetPedConfigFlag(Ped, 32, false)
+
+				local MyCoords = GetEntityCoords(Ped, true)
+
+				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(Vehicle) or not IsVehicleDriveable(Vehicle, true) then
+					NetworkExplodeVehicle(Vehicle, true, true, 0)
 				end
-				if #LivingPlayer == 1 and not DevTestMode then
+
+				if #LivingPlayer == 1 and IsPlayerAbleToPlay(Player) and not DevTestMode then
 					if not WinAdded then
 						TriggerServerEvent('DD:Server:UpdateLeaderboard', true)
 						WinAdded = true
@@ -288,11 +299,10 @@ Citizen.CreateThread(function()
 						ScreenFadeOut(1500)
 						RemoveMyVehicle()
 						TeleportMyBodyAway()
---						Respawn()
 					end
 				end
 			end
-			
+
 			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then
 				if not FinishTriggered then
 					Finished(false)

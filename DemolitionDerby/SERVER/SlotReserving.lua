@@ -2,15 +2,15 @@ local MaxSlots = 32
 local WaitingDuration = 5 --Seconds
 
 AddEventHandler('playerConnecting', function(PlayerName, KickReason, Deferrals)
-	local UseQueue = tonumber(GetConvarInt('UseQueue', 0))
+	local UseQueue = tonumber(GetConvarInt('UseQueue', 0)) == 1
 	local QueueMaxTries = tonumber(GetConvarInt('QueueMaxTries', 10))
-	local ReservedSlots = tonumber(GetConvar('ReservedSlots', 0))
-	
-	if GetConvarInt('UseQueue', 0) == 1 then
+	local ReservedSlots = tonumber(GetConvarInt('ReservedSlots', 0))
+
+	if UseQueue then
 		Deferrals.defer()
 
 		local Source = source
-		
+
 		local Tries = 0
 		Citizen.CreateThread(function()
 			while Tries < QueueMaxTries do

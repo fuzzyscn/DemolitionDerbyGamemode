@@ -39,7 +39,6 @@ end
 
 GetIdentifier = function(ID, Identifier)
 	local Identifiers = GetPlayerIdentifiers(ID)
-	
 	for Key, Value in pairs(Identifiers) do
 		if Value:lower():find(Identifier:lower()) then
 			return Value:sub(Identifier:len() + 2)

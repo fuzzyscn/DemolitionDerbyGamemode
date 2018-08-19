@@ -10,7 +10,7 @@ function SpawnMap(MapName, MapTable, ID)
 			end
 		end
 		SpawnedProps = {}
-		
+
 		for Key, Value in ipairs(SpawnedPickups) do
 			while DoesPickupExist(Value[2]) do
 				Citizen.Wait(0)
@@ -18,7 +18,7 @@ function SpawnMap(MapName, MapTable, ID)
 			end
 		end
 		SpawnedPickups = {}
-		
+
 		for Key, Value in ipairs(MapTable.Props) do
 			if Key == 1 then ReferenceZ = tonumber(Value.Z) end
 			if IsModelValid(tonumber(Value.ModelHash)) then
@@ -36,9 +36,9 @@ function SpawnMap(MapName, MapTable, ID)
 					local Dynamic = false
 					if Value.Dynamic == 'true' then Dynamic = true end
 					local Prop = CreateObject(tonumber(Value.ModelHash), tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, Dynamic)
-					
+
 					table.insert(SpawnedProps, Prop)
-					
+
 					SetEntityCollision(Prop, false, false)
 					SetEntityCoords(Prop, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, false, false)
 					Value.Pitch = tonumber(Value.Pitch) + 0.0
@@ -48,9 +48,8 @@ function SpawnMap(MapName, MapTable, ID)
 					SetEntityRotation(Prop, Value.Pitch, Value.Roll, Value.Yaw, 3, 0)
 					FreezeEntityPosition(Prop, true)
 					SetEntityCollision(Prop, true, true)
-					
-					SetEntityAsMissionEntity(Prop, false, true)
 
+					SetEntityAsMissionEntity(Prop, false, true)
 					SetEntityAsMissionEntity(Prop, true, true)
 				end
 				SetModelAsNoLongerNeeded(tonumber(Value.ModelHash))

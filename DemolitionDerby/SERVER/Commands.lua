@@ -5,19 +5,19 @@ RegisterCommand('bugreport', function(Source, Arguments, RawCommand)
 			date[Key] = '0' .. tostring(date[Key])
 		end
 	end
-	
+
 	local Content = ''
 	local LatestBugReport = LoadResourceFile(GetCurrentResourceName(), 'BugReports' .. GetOSSep() .. 'BugReport_v' .. CurrentVersion .. '_d' .. date.day .. '.' .. date.month .. '.' .. date.year .. '.txt')
 	if LatestBugReport then
 		Content = LatestBugReport
 	end
-	
+
 	local Report = table.concat(Arguments, ' ')
 	local Identifiers = GetPlayerIdentifiers(Source)
 	local IdentifiersString = table.concat(Identifiers, ' / '):gsub('steam:', 'Steam: '):gsub('license:', 'License: '):gsub('ip:', 'IP: ')
-	
+
 	Content = Content .. '	' .. GetPlayerName(Source) .. ' (' .. IdentifiersString .. ')\n			>> ' .. Report .. '\n'
-	
+
 	SaveResourceFile(GetCurrentResourceName(), 'BugReports' .. GetOSSep() .. 'BugReport_v' .. CurrentVersion .. '_' .. date.day .. '.' .. date.month .. '.' .. date.year .. '.txt', Content, -1)
 
 	print(GetPlayerName(Source) .. ' reported a bug!\n>> ' .. Report)
