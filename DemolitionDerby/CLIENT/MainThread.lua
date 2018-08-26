@@ -267,6 +267,11 @@ Citizen.CreateThread(function()
 					TriggerServerEvent('DD:Server:UpdateLeaderboard', false)
 					LossAdded = true
 				end
+				
+				if AFKKickEnabled then
+					AFKKickEnabled = false
+				end
+				
 				if not NetworkIsInSpectatorMode() and #LivingPlayer > 1 then
 					ScreenFadeOut(1500)
 					RemoveMyVehicle()

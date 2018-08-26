@@ -2,14 +2,12 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 		if FreezeTime then
-			print(FrozenTime.Hour .. ':' .. FrozenTime.Minute)
 			NetworkOverrideClockTime(FrozenTime.Hour, FrozenTime.Minute, 0)
 		end
 		if FreezeWeather then
 			SetOverrideWeather(FrozenWeather)
 			SetWeatherTypeNowPersist(FrozenWeather)
 		end
-			print(tostring(GetPrevWeatherTypeHashName() == GetHashKey(FrozenWeather)))
 	end
 end)
 

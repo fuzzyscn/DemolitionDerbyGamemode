@@ -22,7 +22,7 @@ client_script {
 	'CLIENT/PlayerSpawn.lua',
 	'CLIENT/MainThread.lua',
 	'CLIENT/GamerTags.lua',
-	'CLIENT/AFKPingKick.lua',
+	'CLIENT/AFKandPingKick.lua',
 	'CLIENT/UI.lua',
 	'CLIENT/Stats.lua',
 	'CLIENT/Leaderboard.lua',
@@ -38,7 +38,7 @@ server_script {
 	'SERVER/MapToLUA.lua',
 	'SERVER/MapsManager.lua',
 	'SERVER/ServerEvents.lua',
-	'SERVER/AFKPingKick.lua',
+	'SERVER/AFKandPingKick.lua',
 	'SERVER/Leaderboard.lua',
 }
 

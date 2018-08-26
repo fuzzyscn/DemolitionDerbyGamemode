@@ -77,6 +77,7 @@ end
 
 RegisterNetEvent('DD:Client:SetUpAdminMenu')
 AddEventHandler('DD:Client:SetUpAdminMenu', function()
+	CurrentMap = AvailableMaps[1]
 	AddMenuOptionCheckbox(MainMenu)
 	AddMenuOptionList(MainMenu)
 	AddMenuOptionItem(MainMenu)
@@ -91,7 +92,6 @@ Citizen.CreateThread(function()
         Pool:ProcessMenus()
 		
 		if not SetVars and NetworkIsSessionStarted() then
-			CurrentMap = AvailableMaps[1]
 			CurrentWeather = AvailableWeatherTypes[GetWeatherIndex()]
 			CurrentTime = FrozenTime
 			SetVars = true
