@@ -3,22 +3,25 @@ Maps = {}
 local function GetMapsFromPath()
 	print('>>> Getting Maps now!\n')
 	Content = ''
-	local TMPFile = os.tmpname()
+	local TempFile = 'DemolitionDerbyMaps' .. GetOSSep() .. 'TempFile.txt'
 	if os.getenv('HOME') then
-		local Result = os.execute('ls -a1 DemolitionDerbyMaps >' .. TMPFile)
+		local Result = os.execute('ls -a1 DemolitionDerbyMaps >' .. TempFile)
 	else
-		local Result = os.execute('dir "DemolitionDerbyMaps" /b >' .. TMPFile)
+		local Result = os.execute('dir "DemolitionDerbyMaps" /b >' .. TempFile)
 	end
-	local File = io.open(TMPFile, 'r')
+	local File = io.open(TempFile, 'r')
 	Content = File:read('*a')
 	File:close()
-	os.remove(TMPFile)
+	os.remove(TempFile)
 	local ContentSplitted = StringSplit(Content, '\n')
 	for Index, Value in ipairs(ContentSplitted) do
-		if Value and Value ~= '.' and Value ~= '..' and Value ~= '' then
+		if Value and Value ~= '.' and Value ~= '..' and Value ~= '' and not Value:find('TempFile.txt') then
 			local XMLStart, XMLFinish = Value:lower():find('xml')
+			local TXTStart, TXTFinish = Value:lower():find('txt')
 			if XMLStart and XMLFinish then
 				table.insert(Maps, Value:sub(1, XMLFinish))
+			elseif TXTStart and TXTFinish then
+				table.insert(Maps, Value:sub(1, TXTFinish))
 			end
 		end
 	end

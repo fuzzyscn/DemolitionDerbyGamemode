@@ -9,11 +9,11 @@ end
 
 local function SetSpectating()
 	local LivingPlayer = GetLivingPlayers()
-	CurrentlySpectating = LivingPlayer[math.random(1, #LivingPlayer)]
+	CurrentlySpectating = LivingPlayer[math.random(#LivingPlayer)]
 	while not IsPlayerAbleToPlay(CurrentlySpectating) do
 		Citizen.Wait(250)
 		LivingPlayer = GetLivingPlayers()
-		CurrentlySpectating = LivingPlayer[math.random(1, #LivingPlayer)]
+		CurrentlySpectating = LivingPlayer[math.random(#LivingPlayer)]
 	end
 	Spectate(true, CurrentlySpectating)
 end
@@ -41,11 +41,7 @@ local function NextPlayer(LivingPlayer, CurrentKey)
 end
 
 local function SpectatingControl()
-	local Ped = PlayerPedId(); PedSpectating = GetPlayerPed(CurrentlySpectating)
-	if not IsEntityAttachedToEntity(Ped, PedSpectating) then
-		AttachEntityToEntity(Ped, PedSpectating, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, true, 1, false)
-	end
-
+	local PedSpectating = GetPlayerPed(CurrentlySpectating)
 	local LivingPlayer = GetLivingPlayers()
 	local CurrentKey = GetKeyInTable(LivingPlayer, CurrentlySpectating)
 
@@ -53,7 +49,11 @@ local function SpectatingControl()
 		NextPlayer(LivingPlayer, CurrentKey)
 	end
 
-	ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", {{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
+	if not IsEntityFocus(PedSpectating) then
+		SetFocusEntity(PedSpectating)
+	end
+
+	ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', {{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
 	DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 
 	if IsControlJustPressed(1, 174) then
@@ -87,7 +87,6 @@ local function Countdown(State)
 end
 
 local function Finished(IsLastPlayer)
-	
 	if IsLastPlayer then
 		GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1;
 		IsAlive = true; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; DoCountdown = false;
@@ -97,7 +96,7 @@ local function Finished(IsLastPlayer)
 		RemoveMyVehicle()
 		TeleportMyBodyAway()
 	end
-	TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], DevTestMode)
+	TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], AdminTestMode)
 end
 
 Citizen.CreateThread(function()
@@ -136,7 +135,7 @@ Citizen.CreateThread(function()
 		SetCurrentPedWeapon(PlayerPedId(), GetHashKey('WEAPON_UNARMED'), true)
 
 		if NetworkIsHost() then
-			SyncTimeAndWeather()
+--			SyncTimeAndWeather()
 			Players = GetPlayers()
 			if not GameStarted and (#Players >= NeededPlayer) and IsControlJustPressed(1, 166) then
 				TriggerServerEvent('DD:Server:GetRandomMap')
@@ -174,21 +173,21 @@ Citizen.CreateThread(function()
 
 			if #Players >= NeededPlayer then
 				if NetworkIsHost() then
-					if ScaleformCheckValue ~= 1 and not MainMenu:Visible() then
-						ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", HostStart)
+					if ScaleformCheckValue ~= 1 and not MainMenu:Visible() and not SubMenu:Visible() then
+						ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', HostStart)
 						ScaleformCheckValue = 1
 					end
 					DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 				else
-					if ScaleformCheckValue ~= 2 and not MainMenu:Visible() then
-						ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", WaitingForHost)
+					if ScaleformCheckValue ~= 2 and not MainMenu:Visible() and not SubMenu:Visible() then
+						ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', WaitingForHost)
 						ScaleformCheckValue = 2
 					end
 					DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
 				end
 			else
-				if ScaleformCheckValue ~= 3 and not MainMenu:Visible() then
-					ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", MorePlayerNeeded)
+				if ScaleformCheckValue ~= 3 and not MainMenu:Visible() and not SubMenu:Visible() then
+					ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', MorePlayerNeeded)
 					ScaleformCheckValue = 3
 				end
 				DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
@@ -199,8 +198,8 @@ Citizen.CreateThread(function()
 			while Waiting do
 				Citizen.Wait(0)
 				Draw(GetLabelText('FM_COR_PRDY'):gsub('~1~', #ReadyPlayers, 1):gsub('~1~', #Players), 0, 40, 200, 255, 0.5, 0.5, 0.5, 0.5, 2, true, 0) --"*Specific Amount* of *Amount Players* ready"
-				if ScaleformCheckValue ~= 0 and not MainMenu:Visible() then
-					ScaleformHandle = PreIBUse("INSTRUCTIONAL_BUTTONS", WaitingForOtherPlayers)
+				if ScaleformCheckValue ~= 0 and not MainMenu:Visible() and not SubMenu:Visible() then
+					ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', WaitingForOtherPlayers)
 					ScaleformCheckValue = 0
 				end
 				DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
@@ -244,33 +243,16 @@ Citizen.CreateThread(function()
 					AFKKickEnabled = true
 				end
 
-				for Key, Value in ipairs(SpawnedPickups) do
-					if DoesPickupExist(Value[2]) then
-						if HasPickupBeenCollected(Value[2]) then
-							if IsRepairPickup(Value[1]) then
-								SetVehicleFixed(Vehicle)
-								SetVehicleDirtLevel(Vehicle, 0.0)
-							elseif IsBoostPickup(Value[1]) then
-								local SpeedVector = GetEntitySpeedVector(Vehicle, true)
-								if SpeedVector.y > 0.0 then
-									SetVehicleForwardSpeed(Vehicle, 60.0)
-								end
-							end
-						end
-					else
-						table.remove(SpawnedPickups, Key)
-					end
-				end
-
+				local MyCoords = GetEntityCoords(Ped, true)
+				
 				SetPedConfigFlag(Ped, 32, false)
 
-				local MyCoords = GetEntityCoords(Ped, true)
 
 				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(Vehicle) or not IsVehicleDriveable(Vehicle, true) then
 					NetworkExplodeVehicle(Vehicle, true, true, 0)
 				end
 
-				if #LivingPlayer == 1 and IsPlayerAbleToPlay(Player) and not DevTestMode then
+				if #LivingPlayer == 1 and IsPlayerAbleToPlay(Player) and not AdminTestMode then
 					if not WinAdded then
 						TriggerServerEvent('DD:Server:UpdateLeaderboard', true)
 						WinAdded = true
@@ -281,7 +263,7 @@ Citizen.CreateThread(function()
 					end
 				end
 			else
-				if not LossAdded and not MidGameJoiner and not DevTestMode then
+				if not LossAdded and not MidGameJoiner and not AdminTestMode then
 					TriggerServerEvent('DD:Server:UpdateLeaderboard', false)
 					LossAdded = true
 				end
@@ -295,7 +277,7 @@ Citizen.CreateThread(function()
 				if #LivingPlayer > 1 then
 					SpectatingControl()
 				else
-					if not DevTestMode then
+					if not AdminTestMode then
 						ScreenFadeOut(1500)
 						RemoveMyVehicle()
 						TeleportMyBodyAway()
@@ -303,7 +285,7 @@ Citizen.CreateThread(function()
 				end
 			end
 
-			if NetworkIsHost() and #LivingPlayer == 0 and not DevTestMode then
+			if NetworkIsHost() and #LivingPlayer == 0 and not AdminTestMode then
 				if not FinishTriggered then
 					Finished(false)
 					FinishTriggered = true

@@ -10,26 +10,29 @@ dependencies {
 
 client_script {
 	'@NativeUI/NativeUI.lua',
+	'Configuration.lua',
 	'CLIENT/Scaleform.lua',
 	'CLIENT/Peds.lua',
 	'CLIENT/Vehicles.lua',
 	'CLIENT/NetEvents.lua',
-	'CLIENT/GlobalVariablesAndFunctions.lua',
-	'CLIENT/TimeAndWeatherSync.lua',
+	'CLIENT/Global.lua',
+	'CLIENT/AdminMenu.lua',
+	'CLIENT/TimeAndWeather.lua',
 	'CLIENT/MapSpawn.lua',
 	'CLIENT/PlayerSpawn.lua',
-	'CLIENT/DevMenu.lua',
 	'CLIENT/MainThread.lua',
 	'CLIENT/GamerTags.lua',
 	'CLIENT/AFKPingKick.lua',
 	'CLIENT/UI.lua',
 	'CLIENT/Stats.lua',
 	'CLIENT/Leaderboard.lua',
+	'CLIENT/EventCheck.js',
 }
 
 server_script {
-	'SERVER/GeneralStuff.lua',
-	'SERVER/GlobalVariablesAndFunctions.lua',
+	'Configuration.lua',
+	'SERVER/General.lua',
+	'SERVER/Global.lua',
 	'SERVER/Commands.lua',
 	'SERVER/SlotReserving.lua',
 	'SERVER/MapToLUA.lua',
@@ -38,3 +41,9 @@ server_script {
 	'SERVER/AFKPingKick.lua',
 	'SERVER/Leaderboard.lua',
 }
+
+--[[
+
+		Big thanks to throwarray for writing the piece of code to check for game events
+
+]]

@@ -13,6 +13,16 @@ AddEventHandler('DD:Server:SyncTimeAndWeather', function(Time, Weather)
 	TriggerClientEvent('DD:Client:SyncTimeAndWeather', -1, Time, Weather)
 end)
 
+RegisterServerEvent('DD:Server:FreezeTime')
+AddEventHandler('DD:Server:FreezeTime', function(FreezeT, Time)
+	TriggerClientEvent('DD:Client:FreezeTime', -1, FreezeT, Time)
+end)
+
+RegisterServerEvent('DD:Server:FreezeWeather')
+AddEventHandler('DD:Server:FreezeWeather', function(FreezeW, Weather)
+	TriggerClientEvent('DD:Client:FreezeWeather', -1, FreezeW, Weather)
+end)
+
 RegisterServerEvent('DD:Server:Ready')
 AddEventHandler('DD:Server:Ready', function(Player)
 	TriggerClientEvent('DD:Client:Ready', -1, Player)
@@ -38,8 +48,8 @@ AddEventHandler('DD:Server:Countdown', function(State)
 end)
 
 RegisterServerEvent('DD:Server:GameFinished')
-AddEventHandler('DD:Server:GameFinished', function(MapName, IsDevMode)
-	if not IsDevMode then
+AddEventHandler('DD:Server:GameFinished', function(MapName, IsTestMode)
+	if not IsTestMode then
 		SaveLeaderboard(MapName)
 	end
 	TriggerClientEvent('DD:Client:GameFinished', -1)
@@ -59,14 +69,14 @@ AddEventHandler('DD:Server:IsGameRunningAnswer', function(Player, State)
 	TriggerClientEvent('DD:Client:IsGameRunningAnswer', Player, State)
 end)
 
-RegisterServerEvent('DD:Server:GetDevInfos')
-AddEventHandler('DD:Server:GetDevInfos', function()
-	TriggerClientEvent('DD:Client:GotDevInfos', source, IsPlayerAceAllowed(source, 'DD'), Maps)
+RegisterServerEvent('DD:Server:GetAdminInfos')
+AddEventHandler('DD:Server:GetAdminInfos', function()
+	TriggerClientEvent('DD:Client:GotAdminInfos', source, IsPlayerAceAllowed(source, 'DD'), Maps)
 end)
 
-RegisterServerEvent('DD:Server:DevMode')
-AddEventHandler('DD:Server:DevMode', function(DevMode)
-	TriggerClientEvent('DD:Client:DevMode', -1, DevMode)
+RegisterServerEvent('DD:Server:TestMode')
+AddEventHandler('DD:Server:TestMode', function(TestMode)
+	TriggerClientEvent('DD:Client:TestMode', -1, TestMode)
 end)
 
 RegisterServerEvent('DD:Server:LoadMap')

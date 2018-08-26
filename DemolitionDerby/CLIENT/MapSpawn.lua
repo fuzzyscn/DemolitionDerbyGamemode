@@ -11,10 +11,10 @@ function SpawnMap(MapName, MapTable, ID)
 		end
 		SpawnedProps = {}
 
-		for Key, Value in ipairs(SpawnedPickups) do
-			while DoesPickupExist(Value[2]) do
+		for Key, Pickup in pairs(SpawnedPickups) do
+			while DoesPickupExist(Pickup.Id) do
 				Citizen.Wait(0)
-				RemovePickup(Value[2])
+				RemovePickup(Pickup.Id)
 			end
 		end
 		SpawnedPickups = {}
@@ -28,9 +28,13 @@ function SpawnMap(MapName, MapTable, ID)
 						Citizen.Wait(0)
 					end
 				end
-				if IsRepairPickup(Value.ModelHash) or IsBoostPickup(Value.ModelHash) then
-					local Pickup = CreatePickupRotate(1104334678, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), 0.0, 0.0, 0.0, 512, 0, 2, 1, tonumber(Value.ModelHash))
-					table.insert(SpawnedPickups, {tonumber(Value.ModelHash), Pickup})
+				if IsRepairPickup(Value.ModelHash) then
+					local Pickup = CreatePickupRotate(160266735, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), 0.0, 0.0, 0.0, 512, 1000, 2, 1, tonumber(Value.ModelHash))
+					table.insert(SpawnedPickups, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
+					SetPickupRegenerationTime(Pickup, 10000)
+				elseif IsBoostPickup(Value.ModelHash) then
+					local Pickup = CreatePickupRotate(-1514616151, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), 0.0, 0.0, 0.0, 512, 1000, 2, 1, tonumber(Value.ModelHash))
+					table.insert(SpawnedPickups, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
 					SetPickupRegenerationTime(Pickup, 10000)
 				else
 					local Dynamic = false

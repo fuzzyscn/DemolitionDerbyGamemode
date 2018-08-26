@@ -24,7 +24,7 @@ end
 
 StringSplit = function(Input, Seperator)
 	Result = {}
-	for match in (Input .. Seperator):gmatch("(.-)" .. Seperator) do
+	for match in (Input .. Seperator):gmatch('(.-)' .. Seperator) do
 		table.insert(Result, match)
 	end
 	return Result

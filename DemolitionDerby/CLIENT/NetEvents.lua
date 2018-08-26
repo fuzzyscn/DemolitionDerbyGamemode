@@ -21,6 +21,7 @@ AddEventHandler('DD:Client:GameFinished', function()
 	ShowLeaderboard = false;
 
 	if NetworkIsInSpectatorMode() then
+		ClearFocus()
 		Spectate(false, PlayerId())
 	end
 	RemoveMyVehicle()
@@ -47,11 +48,16 @@ end)
 
 RegisterNetEvent('DD:Client:SyncTimeAndWeather')
 AddEventHandler('DD:Client:SyncTimeAndWeather', function(Time, Weather)
-	if not NetworkIsHost() then
-		SetClockDate(Time.Day, Time.Month, Time.Year)
-		SetClockTime(Time.Hour, Time.Minute, Time.Second)
-		SetWeatherTypeNow(Weather)
-		SetOverrideWeather(Weather)
+	if Time then
+		CurrentTime = Time
+		NetworkOverrideClockTime(Time.Hour, Time.Minute, Time.Second)
+	end
+	if Weather then
+		CurrentWeather = Weather
+		SetOverrideWeather(CurrentWeather)
+		SetWeatherTypeNowPersist(CurrentWeather)
+		ClearOverrideWeather()
+		ClearWeatherTypePersist()
 	end
 end)
 
@@ -72,21 +78,35 @@ AddEventHandler('DD:Client:IsGameRunningAnswer', function(State)
 	end
 end)
 
-RegisterNetEvent('DD:Client:GotDevInfos')
-AddEventHandler('DD:Client:GotDevInfos', function(Allowed, Maps)
-	IsDev = Allowed
+RegisterNetEvent('DD:Client:GotAdminInfos')
+AddEventHandler('DD:Client:GotAdminInfos', function(Allowed, Maps)
+	IsAdmin = Allowed
 	AvailableMaps = Maps
-	TriggerEvent('DD:Client:SetUpDevMenu')
+	TriggerEvent('DD:Client:SetUpAdminMenu')
 end)
 
-RegisterNetEvent('DD:Client:DevMode')
-AddEventHandler('DD:Client:DevMode', function(DevMode)
-	DevTestMode = DevMode
-	if DevTestMode then
+RegisterNetEvent('DD:Client:TestMode')
+AddEventHandler('DD:Client:TestMode', function(TestMode)
+	AdminTestMode = TestMode
+	if AdminTestMode then
 		NeededPlayer = 1
 	else
 		NeededPlayer = 2
 	end
+end)
+
+RegisterNetEvent('DD:Client:FreezeTime')
+AddEventHandler('DD:Client:FreezeTime', function(FreezeT, Time)
+	FrozenTime = Time
+	CurrentTime = FrozenTime
+	FreezeTime = FreezeT
+end)
+
+RegisterNetEvent('DD:Client:FreezeWeather')
+AddEventHandler('DD:Client:FreezeWeather', function(FreezeW, Weather)
+	FrozenWeather = Weather
+	CurrentWeather = FrozenWeather
+	FreezeWeather = FreezeW
 end)
 
 AddEventHandler('onClientGameTypeStart', function()
@@ -95,7 +115,7 @@ AddEventHandler('onClientGameTypeStart', function()
 		ShutdownLoadingScreenNui()
 	end
 
-	TriggerServerEvent('DD:Server:GetDevInfos')
+	TriggerServerEvent('DD:Server:GetAdminInfos')
 
 	if NetworkGetNumConnectedPlayers() > 1 then
 		TriggerServerEvent('DD:Server:IsGameRunning')
@@ -109,3 +129,27 @@ AddEventHandler('DD:Client:UpdateLeaderboard', function(LB)
 	Leaderboard = LB
 end)
 
+RegisterNetEvent('DD:Client:PickupCollected')
+AddEventHandler('DD:Client:PickupCollected', function(Pickup)
+	if Pickup['2'] == PlayerId() and IsBoostPickup(Pickup['8']) then
+		local Vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+		local SpeedVector = GetEntitySpeedVector(Vehicle, true)
+		if SpeedVector.y > 0.0 then
+			SetVehicleForwardSpeed(Vehicle, 60.0)
+		end
+	end
+end)
+
+--[[
+AddEventHandler('gameEventTriggered', function(Name, Arguments)
+	print('---------------------------------')
+	print(Name)
+	print(type(Arguments))
+	print(#Arguments)
+	for Key, Value in pairs(Arguments) do
+		print(Key .. ' - ' .. Value)
+	end
+	print('---------------------------------')
+	
+end)
+]]

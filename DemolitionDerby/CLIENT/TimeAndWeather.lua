@@ -1,3 +1,18 @@
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+		if FreezeTime then
+			print(FrozenTime.Hour .. ':' .. FrozenTime.Minute)
+			NetworkOverrideClockTime(FrozenTime.Hour, FrozenTime.Minute, 0)
+		end
+		if FreezeWeather then
+			SetOverrideWeather(FrozenWeather)
+			SetWeatherTypeNowPersist(FrozenWeather)
+		end
+			print(tostring(GetPrevWeatherTypeHashName() == GetHashKey(FrozenWeather)))
+	end
+end)
+
 function SyncTimeAndWeather()
 	local WeatherTypes = {
 						  [GetHashKey('BLIZZARD')] = 'BLIZZARD',
@@ -16,7 +31,7 @@ function SyncTimeAndWeather()
 						  [GetHashKey('XMAS')] = 'XMAS',
 						 }
 
-	local Time = {['Year'] = GetClockYear(), ['Month'] = GetClockMonth(), ['Day'] = GetClockDayOfMonth(), ['Hour'] = GetClockHours(), ['Minute'] = GetClockMinutes(), ['Second'] = GetClockSeconds()}
+	local Time = {['Hour'] = GetClockHours(), ['Minute'] = GetClockMinutes(), ['Second'] = GetClockSeconds()}
 	local Weather = WeatherTypes[GetPrevWeatherTypeHashName()]
 	TriggerServerEvent('DD:Server:SyncTimeAndWeather', Time, Weather)
 end

@@ -12,9 +12,26 @@ SpawnMeNow = false; VehicleClass = 0
 
 SpawnedProps = {}; SpawnedPickups = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
 
-IsDev = false; AvailableMaps = {}; CurrentMap = ''; DevTestMode = false
+IsAdmin = false; AvailableMaps = {}; CurrentMap = ''; AdminTestMode = false; CurrentWeather = ''; CurrentTime = {}
 
 MaximumPlayer = 32
+
+AvailableWeatherTypes = {
+						 'BLIZZARD',
+						 'CLEAR',
+						 'CLEARING',
+						 'CLOUDS',
+						 'EXTRASUNNY',
+						 'FOGGY',
+						 'SNOWLIGHT',
+						 'NEUTRAL',
+						 'OVERCAST',
+						 'RAIN',
+						 'SMOG',
+						 'SNOW',
+						 'THUNDER',
+						 'XMAS',
+						}
 
 function IsTableContainingKey(Table, SearchedFor)
 	for Key, Value in pairs(Table) do
@@ -45,7 +62,7 @@ end
 
 function StringSplit(Input, Seperator)
     Result = {}
-    for match in (Input .. Seperator):gmatch("(.-)" .. Seperator) do
+    for match in (Input .. Seperator):gmatch('(.-)' .. Seperator) do
         table.insert(Result, match)
     end
     return Result
@@ -79,7 +96,7 @@ function DrawTxt(text, x, y)
 	SetTextEdge(1, 0, 0, 0, 255)
 	SetTextDropShadow()
 	SetTextOutline()
-	SetTextEntry("STRING")
+	SetTextEntry('STRING')
 	AddTextComponentString(text)
 	EndTextCommandDisplayText(x, y)
 end
@@ -94,7 +111,7 @@ function Draw(Text, R, G, B, A, X, Y, Width, Height, Layer, Center, Font)
 	SetTextEdge(1, 0, 0, 0, 205)
 	SetTextEntry('STRING')
 	AddTextComponentSubstringPlayerName(Text)
-	Set_2dLayer(Layer)
+	SetUiLayer(Layer)
 	EndTextCommandDisplayText(X, Y)
 end
 
@@ -125,7 +142,7 @@ function GetRandomVehicleFromClass(Class)
 		end
 	end
 	
-	local RandomIndex = math.random(1, #ClassVehicles)
+	local RandomIndex = math.random(#ClassVehicles)
 	local Vehicle = GetHashKey(ClassVehicles[RandomIndex])
 	if not IsModelValid(Vehicle) then
 		return GetRandomVehicleFromClass(Class)
@@ -134,7 +151,7 @@ function GetRandomVehicleFromClass(Class)
 end
 
 function GetRandomPed()
-	local RandomIndex = math.random(1, #Peds)
+	local RandomIndex = math.random(#Peds)
 	if not IsModelValid(GetHashKey(Peds[RandomIndex][1])) then
 		return GetRandomPed()
 	end
@@ -196,10 +213,6 @@ function Respawn()
 
 	ScreenFadeOut(500)
 
-	if IsEntityAttached(PlayerPedId()) then
-		DetachEntity(PlayerPedId(), false, true)
-	end
-
 	SetPlayerControl(PlayerId(), false, false)
 	SetPlayerInvincible(PlayerId(), true)
 
@@ -248,31 +261,31 @@ function PreIBUse(ScaleformName, Controls)
 		Citizen.Wait(0)
 	end
 
-	PushScaleformMovieFunction(ScaleformHandle, "CLEAR_ALL")
+	PushScaleformMovieFunction(ScaleformHandle, 'CLEAR_ALL')
 	PopScaleformMovieFunctionVoid()
 
-	PushScaleformMovieFunction(ScaleformHandle, "SET_CLEAR_SPACE")
+	PushScaleformMovieFunction(ScaleformHandle, 'SET_CLEAR_SPACE')
 	PushScaleformMovieFunctionParameterInt(200)
 	PopScaleformMovieFunctionVoid()
 
 	for Key, Value in pairs(Controls) do
-		PushScaleformMovieFunction(ScaleformHandle, "SET_DATA_SLOT")
+		PushScaleformMovieFunction(ScaleformHandle, 'SET_DATA_SLOT')
 		PushScaleformMovieFunctionParameterInt(Value.Slot)
 		if Value.Control == 'Load' then
 			PushScaleformMovieMethodParameterInt(50)
 		else
 			PushScaleformMovieMethodParameterButtonName(GetControlInstructionalButton(0, Value.Control, true))
 		end
-		BeginTextCommandScaleformString("STRING")
+		BeginTextCommandScaleformString('STRING')
 		AddTextComponentScaleform(Value.Text)
 		EndTextCommandScaleformString()
 		PopScaleformMovieFunctionVoid()
 	end
 
-	PushScaleformMovieFunction(ScaleformHandle, "DRAW_INSTRUCTIONAL_BUTTONS")
+	PushScaleformMovieFunction(ScaleformHandle, 'DRAW_INSTRUCTIONAL_BUTTONS')
 	PopScaleformMovieFunctionVoid()
 
-	PushScaleformMovieFunction(ScaleformHandle, "SET_BACKGROUND_COLOUR")
+	PushScaleformMovieFunction(ScaleformHandle, 'SET_BACKGROUND_COLOUR')
 	PushScaleformMovieFunctionParameterInt(0)
 	PushScaleformMovieFunctionParameterInt(0)
 	PushScaleformMovieFunctionParameterInt(0)
@@ -290,14 +303,16 @@ function IsPlayerAbleToPlay(Player)
 end
 
 function IsRepairPickup(Pickup)
-	if tonumber(Pickup) == 0xF145F439 or tonumber(Pickup) == 0xE6FA7770 or tonumber(Pickup) == 0x48AC6542 then
+	Pickup = tonumber(Pickup)
+	if Pickup == 0xF145F439 or Pickup == 0xE6FA7770 or Pickup == 0x48AC6542 then
 		return true
 	end
 	return false
 end
 
 function IsBoostPickup(Pickup)
-	if tonumber(Pickup) == 0x537308AE or tonumber(Pickup) == 0x65EAF4B2 then
+	Pickup = tonumber(Pickup)
+	if Pickup == 0x537308AE or Pickup == 0x65EAF4B2 then
 		return true
 	end
 	return false
@@ -308,3 +323,11 @@ function GetActualMapName()
 	return MapReceived[2]:reverse():sub(MapNameDotPosition + 1, MapReceived[2]:len()):reverse()
 end
 
+function GetWeatherIndex()
+	for Key, Weather in ipairs(AvailableWeatherTypes) do
+		if GetPrevWeatherTypeHashName() == GetHashKey(Weather) then
+			return Key
+		end
+	end
+	return 1
+end
