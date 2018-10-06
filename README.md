@@ -4,17 +4,23 @@ This is a Gamemode for [FiveM](https://fivem.net/) which is a modification for G
 
 It is still at the very beginning and a work in progess.
 
-The goal of this project is to create a Demolition Derby experience in FiveM. Most of basic stuff needed is already done.
+The goal of this project is to create a Demolition Derby experience in FiveM. Most of the basic stuff needed is already done.
 It may not always be the best way to do things, but that is alright for now.
 
 ## How to play it?
 
-You can host it yourself or you play on the official testing Server: FiveM | Demolition Derby (45.58.61.117:30122)
+You can host it yourself or you play on the official testing Server: FiveM | Demolition Derby (45.58.61.117:30122) Currently offline
 
 ## How to contribute?
 
+#### Code improvements
+
 If you want to contribute, just fork the repository and create a pull request afterwards.
 After checking out the PR we will consider merging it or not.
+
+#### Maps
+
+You can create maps by sticking to the [explanation](https://github.com/Flatracer/DemolitionDerbyGamemode/wiki/%5BHow-to%5D-Create-maps) in the wiki. Afterwards you can create a PR and we might add it to the repo.
 
 ## Requirements
 
