@@ -14,14 +14,29 @@ function AddMenuOptionCheckbox(Menu)
 end
 
 function AddMenuOptionList(Menu)
-    local SelectMap = UIMenuListItem.New('Select Map', AvailableMaps, 1, 'Select a map to be used with the "Force restart" option.')
+	local Maps = {}
+	for Key, Value in pairs(AvailableMaps) do
+		table.insert(Maps, Value[2])
+	end
+    local SelectMap = UIMenuListItem.New('Select Map', Maps, 1, 'Select a map to be used with the "Force restart" option.')
     Menu:AddItem(SelectMap)
     Menu.OnListChange = function(Sender, Item, Index)
         if Item == SelectMap then
-            CurrentMap = Item:IndexToItem(Index)
+            CurrentMap = AvailableMaps[Index]
 		end
     end
 end
+
+--[[
+AddEventHandler('gameEventTriggered', function(Name, Arguments)
+	TriggerServerEvent('DD:Server:ToRCON', '----------------------------------')
+	TriggerServerEvent('DD:Server:ToRCON', Name)
+	for Key, Value in pairs(Arguments) do
+		TriggerServerEvent('DD:Server:ToRCON', Key .. ' - ' .. Value)
+	end
+	TriggerServerEvent('DD:Server:ToRCON', '----------------------------------')
+end)
+]]
 
 function AddMenuOptionItem(Menu)
     local ForceRestart = UIMenuItem.New('Force restart', 'Forces the game to restart with the selected map.')

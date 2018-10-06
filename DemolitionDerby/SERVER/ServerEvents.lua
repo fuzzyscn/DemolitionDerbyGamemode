@@ -33,7 +33,7 @@ AddEventHandler('DD:Server:GetRandomMap', function()
 	local Source = source
 	Citizen.CreateThread(function()
 		math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
-		local RandomMapName = Maps[math.random(#Maps)]
+		local RandomMapName = Maps[math.random(MapCount)][1]
 		local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. RandomMapName, 'r')
 		local MapFileContent = MapFile:read('*a')
 		local MapFileContentToLUA = MapToLUA(MapFileContent)
@@ -65,8 +65,8 @@ AddEventHandler('DD:Server:IsGameRunning', function()
 end)
 
 RegisterServerEvent('DD:Server:IsGameRunningAnswer')
-AddEventHandler('DD:Server:IsGameRunningAnswer', function(Player, State)
-	TriggerClientEvent('DD:Client:IsGameRunningAnswer', Player, State)
+AddEventHandler('DD:Server:IsGameRunningAnswer', function(Player, State, FreezeT, Time, FreezeW, Weather)
+	TriggerClientEvent('DD:Client:IsGameRunningAnswer', Player, State, FreezeT, Time, FreezeW, Weather)
 end)
 
 RegisterServerEvent('DD:Server:GetAdminInfos')
@@ -76,19 +76,33 @@ end)
 
 RegisterServerEvent('DD:Server:TestMode')
 AddEventHandler('DD:Server:TestMode', function(TestMode)
-	TriggerClientEvent('DD:Client:TestMode', -1, TestMode)
+	TriggerClientEvent('DD:Client:TestMode', -1, TestMode, GetIdentifier(source, 'license'))
+end)
+
+RegisterServerEvent('DD:Server:CheckAdminConnectionStatus')
+AddEventHandler('DD:Server:CheckAdminConnectionStatus', function(Admin)
+	local Clients = GetPlayers()
+	for Key, Value in ipairs(Clients) do
+		if GetIdentifier(Value, 'license') == Admin then
+			return
+		end
+		
+		if Key == #Clients then
+			TriggerClientEvent('DD:Client:AdminDisconnected', -1, false)
+		end
+	end
 end)
 
 RegisterServerEvent('DD:Server:LoadMap')
 AddEventHandler('DD:Server:LoadMap', function(Map)
 	local Source = source
 	Citizen.CreateThread(function()
-		if IsTableContainingValue(Maps, Map) then
-			local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map, 'r')
+		if IsTableContainingValue(Maps, Map[1], true) then
+			local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map[1], 'r')
 			local MapFileContent = MapFile:read('*a')
 			local MapFileContentToLUA = MapToLUA(MapFileContent)
 			MapFile:close()
-			LoadLeaderboard(Map, MapFileContentToLUA, Source)
+			LoadLeaderboard(Map[1], MapFileContentToLUA, Source)
 		else
 			print('ERROR!\nMap not found!')
 		end

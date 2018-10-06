@@ -64,13 +64,27 @@ end)
 RegisterNetEvent('DD:Client:IsGameRunning')
 AddEventHandler('DD:Client:IsGameRunning', function(Player)
 	if NetworkIsHost() then
-		TriggerServerEvent('DD:Server:IsGameRunningAnswer', Player, GameStarted)
+		TriggerServerEvent('DD:Server:IsGameRunningAnswer', Player, GameStarted, FreezeTime, FrozenTime, FreezeWeather, FrozenWeather)
 	end
 end)
 
 RegisterNetEvent('DD:Client:IsGameRunningAnswer')
-AddEventHandler('DD:Client:IsGameRunningAnswer', function(State)
+AddEventHandler('DD:Client:IsGameRunningAnswer', function(State, FreezeT, Time, FreezeW, Weather)
 	GameStarted = State; GameRunning = State; MidGameJoiner = State
+	if FreezeT ~= nil then
+		FreezeTime = FreezeT
+	end
+	if Time ~= nil then
+		FrozenTime = Time
+		CurrentTime = Time
+	end
+	if FreezeW ~= nil then
+		FreezeWeather = FreezeW
+	end
+	if Weather ~= nil then
+		FrozenWeather = Weather
+		CurrentWeather = Weather
+	end
 	if not GameStarted then
 		Respawn()
 	else
@@ -86,19 +100,28 @@ AddEventHandler('DD:Client:GotAdminInfos', function(Allowed, Maps)
 end)
 
 RegisterNetEvent('DD:Client:TestMode')
-AddEventHandler('DD:Client:TestMode', function(TestMode)
+AddEventHandler('DD:Client:TestMode', function(TestMode, Admin)
 	AdminTestMode = TestMode
 	if AdminTestMode then
+		TestModeAdmin = Admin
 		NeededPlayer = 1
 	else
+		TestModeAdmin = nil
 		NeededPlayer = 2
 	end
+end)
+
+RegisterNetEvent('DD:Client:AdminDisconnected')
+AddEventHandler('DD:Client:AdminDisconnected', function()
+	AdminTestMode = false
+	TestModeAdmin = nil
+	NeededPlayer = 2
 end)
 
 RegisterNetEvent('DD:Client:FreezeTime')
 AddEventHandler('DD:Client:FreezeTime', function(FreezeT, Time)
 	FrozenTime = Time
-	CurrentTime = FrozenTime
+	CurrentTime = Time
 	FreezeTime = FreezeT
 end)
 
@@ -131,7 +154,7 @@ end)
 
 RegisterNetEvent('DD:Client:PickupCollected')
 AddEventHandler('DD:Client:PickupCollected', function(Pickup)
-	if Pickup['2'] == PlayerId() and IsBoostPickup(Pickup['8']) then
+	if Pickup[2] == PlayerId() and IsBoostPickup(Pickup[5]) then
 		local Vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
 		local SpeedVector = GetEntitySpeedVector(Vehicle, true)
 		if SpeedVector.y > 0.0 then
@@ -140,16 +163,8 @@ AddEventHandler('DD:Client:PickupCollected', function(Pickup)
 	end
 end)
 
---[[
 AddEventHandler('gameEventTriggered', function(Name, Arguments)
-	print('---------------------------------')
-	print(Name)
-	print(type(Arguments))
-	print(#Arguments)
-	for Key, Value in pairs(Arguments) do
-		print(Key .. ' - ' .. Value)
+	if Name == 'CEventNetworkPlayerCollectedPickup' then
+		TriggerEvent('DD:Client:PickupCollected', Arguments);
 	end
-	print('---------------------------------')
-	
 end)
-]]

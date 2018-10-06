@@ -44,7 +44,7 @@ function SpawnMe()
 
 	GameStarted = true
 
-	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName()))
+	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName(MapReceived[2])))
 end
 
 Citizen.CreateThread(function()

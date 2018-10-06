@@ -12,7 +12,7 @@ SpawnMeNow = false; VehicleClass = 0
 
 SpawnedProps = {}; SpawnedPickups = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
 
-IsAdmin = false; AvailableMaps = {}; CurrentMap = ''; AdminTestMode = false; CurrentWeather = ''; CurrentTime = {}
+IsAdmin = false; AvailableMaps = {}; CurrentMap = ''; AdminTestMode = false; CurrentWeather = ''; CurrentTime = {['Hour'] = 0, ['Minute'] = 0}
 
 MaximumPlayer = 32
 
@@ -34,18 +34,28 @@ AvailableWeatherTypes = {
 						}
 
 function IsTableContainingKey(Table, SearchedFor)
-	for Key, Value in pairs(Table) do
-		if Key == SearchedFor then
-			return true
+	if type(Table) == 'table' then
+		for Key, Value in pairs(Table) do
+			if Key == SearchedFor then
+				return true
+			end
 		end
 	end
     return false
 end
 
-function IsTableContainingValue(Table, SearchedFor)
-	for Key, Value in pairs(Table) do
-		if Value == SearchedFor then
-			return true
+function IsTableContainingValue(Table, SearchedFor, ValueInSubTable)
+	if type(Table) == 'table' then
+		for Key, Value in pairs(Table) do
+			if not ValueInSubTable and Value == SearchedFor then
+				return true
+			elseif ValueInSubTable then
+				for SubKey, SubValue in pairs(Value) do
+					if Value == SearchedFor then
+						return true
+					end
+				end
+			end
 		end
 	end
     return false
@@ -318,9 +328,9 @@ function IsBoostPickup(Pickup)
 	return false
 end
 
-function GetActualMapName()
-	local MapNameDotPosition = MapReceived[2]:reverse():find('%.')
-	return MapReceived[2]:reverse():sub(MapNameDotPosition + 1, MapReceived[2]:len()):reverse()
+function GetActualMapName(Map)
+	local MapNameDotPosition = Map:reverse():find('%.')
+	return Map:sub(1, Map:len() - MapNameDotPosition)
 end
 
 function GetWeatherIndex()

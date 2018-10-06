@@ -11,11 +11,17 @@ IsTableContainingKey = function(Table, SearchedFor)
     return false
 end
 
-IsTableContainingValue = function(Table, SearchedFor)
+IsTableContainingValue = function(Table, SearchedFor, ValueInSubTable)
 	if type(Table) == 'table' then
 		for Key, Value in pairs(Table) do
-			if Value == SearchedFor then
+			if not ValueInSubTable and Value == SearchedFor then
 				return true
+			elseif ValueInSubTable then
+				for SubKey, SubValue in pairs(Value) do
+					if SubValue == SearchedFor then
+						return true
+					end
+				end
 			end
 		end
 	end
@@ -45,5 +51,10 @@ GetIdentifier = function(ID, Identifier)
 		end
 	end
 	return nil
+end
+
+GetActualMapName = function(Map)
+	local MapNameDotPosition = Map:reverse():find('%.')
+	return Map:sub(1, Map:len() - MapNameDotPosition)
 end
 

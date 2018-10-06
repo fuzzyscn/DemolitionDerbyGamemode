@@ -102,6 +102,7 @@ end
 Citizen.CreateThread(function()
 	local AT = {'fmmc'}
 	local Players; RescueFadedOutScreen = true
+	local PerodicalCheck = GetGameTimer()
 	while true do
 		Citizen.Wait(0)
 		if RescueFadedOutScreen then
@@ -135,6 +136,13 @@ Citizen.CreateThread(function()
 		SetCurrentPedWeapon(PlayerPedId(), GetHashKey('WEAPON_UNARMED'), true)
 
 		if NetworkIsHost() then
+			if AdminTestMode and TestModeAdmin then
+				if GetGameTimer() - PerodicalCheck >= 2500 then
+					TriggerServerEvent('DD:Server:CheckAdminConnectionStatus', TestModeAdmin)
+					PerodicalCheck = GetGameTimer()
+				end
+			end
+			
 --			SyncTimeAndWeather()
 			Players = GetPlayers()
 			if not GameStarted and (#Players >= NeededPlayer) and IsControlJustPressed(1, 166) then
@@ -263,6 +271,10 @@ Citizen.CreateThread(function()
 					end
 				end
 			else
+				if (IsControlJustReleased(13, 199) or IsControlJustReleased(13, 200)) and GetCurrentFrontendMenu() == -1 then
+					SetFrontendActive(true)
+				end
+				
 				if not LossAdded and not MidGameJoiner and not AdminTestMode then
 					TriggerServerEvent('DD:Server:UpdateLeaderboard', false)
 					LossAdded = true

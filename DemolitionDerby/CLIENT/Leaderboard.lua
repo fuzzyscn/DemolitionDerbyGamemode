@@ -22,7 +22,7 @@ Citizen.CreateThread(function()
 			Draw('Leaderboard', 255, 255, 255, 255, TopTenX + 0.0775, TopTenY - 0.025, 0.1, 0.45, 2, true, 0)
 			TopTenY = TopTenY + (TopTenH / 10.0)
 
-			Draw(GetActualMapName():sub(1, 30), 255, 255, 255, 255, TopTenX + 0.0775, TopTenY - 0.022, 0.0, 0.2, 1, true, 0)
+			Draw(GetActualMapName(MapReceived[2]):sub(1, 30), 255, 255, 255, 255, TopTenX + 0.0775, TopTenY - 0.022, 0.0, 0.2, 1, true, 0)
 
 			Draw('Name', 255, 153, 0, 255, TopTenX - 0.007, TopTenY, 0.0, 0.35, 2, false, 0)
 			Draw('Won', 0, 127, 0, 255, TopTenX + 0.10, TopTenY, 0.0, 0.35, 2, true, 0)

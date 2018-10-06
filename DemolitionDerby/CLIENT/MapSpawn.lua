@@ -1,12 +1,21 @@
 function SpawnMap(MapName, MapTable, ID)
 	if #MapTable.Vehicles >= MaximumPlayer then
-		for Key, Value in ipairs(SpawnedProps) do
-			while DoesEntityExist(Value) do
+		if #SpawnedProps > 0 and NetworkIsHost() then
+			local Coords = GetEntityCoords(SpawnedProps[1], false)
+			ClearAreaOfCops(Coords, 500.0, 0)
+			ClearAreaOfObjects(Coords, 500.0, 0)
+			ClearAreaOfPeds(Coords, 500.0, 1)
+			ClearAreaOfProjectiles(Coords, 500.0, true)
+			ClearAreaOfVehicles(Coords, 500.0, false, false, false, false, false)
+		end
+		
+		for Key, Prop in ipairs(SpawnedProps) do
+			while DoesEntityExist(Prop) do
 				Citizen.Wait(0)
-				if not IsEntityAMissionEntity(Value) then
-					SetEntityAsMissionEntity(Value, true, true)
+				if not IsEntityAMissionEntity(Prop) then
+					SetEntityAsMissionEntity(Prop, true, true)
 				end
-				DeleteObject(Value)
+				DeleteObject(Prop)
 			end
 		end
 		SpawnedProps = {}

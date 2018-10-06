@@ -26,7 +26,6 @@ client_script {
 	'CLIENT/UI.lua',
 	'CLIENT/Stats.lua',
 	'CLIENT/Leaderboard.lua',
-	'CLIENT/EventCheck.js',
 }
 
 server_script {

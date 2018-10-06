@@ -1,4 +1,4 @@
-Maps = {}
+Maps = {}; MapCount = 0
 
 local function GetMapsFromPath()
 	print('>>> Getting Maps now!\n')
@@ -19,9 +19,11 @@ local function GetMapsFromPath()
 			local XMLStart, XMLFinish = Value:lower():find('xml')
 			local TXTStart, TXTFinish = Value:lower():find('txt')
 			if XMLStart and XMLFinish then
-				table.insert(Maps, Value:sub(1, XMLFinish))
+				MapCount = MapCount + 1
+				table.insert(Maps, {Value:sub(1, XMLFinish), GetActualMapName(Value:sub(1, XMLFinish))})
 			elseif TXTStart and TXTFinish then
-				table.insert(Maps, Value:sub(1, TXTFinish))
+				MapCount = MapCount + 1
+				table.insert(Maps, {Value:sub(1, TXTFinish), GetActualMapName(Value:sub(1, TXTFinish))})
 			end
 		end
 	end
