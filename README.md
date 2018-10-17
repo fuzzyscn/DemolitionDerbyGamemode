@@ -7,6 +7,8 @@ It is still at the very beginning and a work in progess.
 The goal of this project is to create a Demolition Derby experience in FiveM. Most of the basic stuff needed is already done.
 It may not always be the best way to do things, but that is alright for now.
 
+[Disord](https://discordapp.com/invite/CupFkQN)
+
 ## How to play it?
 
 You can host it yourself or you play on the official testing Server: FiveM | Demolition Derby (45.58.61.117:30122) Currently offline
