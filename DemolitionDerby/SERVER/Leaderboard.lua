@@ -4,7 +4,7 @@ SaveLeaderboard = function(MapName)
 	Leaderboard = {}
 end
 
-LoadLeaderboard = function(MapName, MapFileContentToLUA, Source)
+LoadLeaderboard = function(MapName, MapFileContentToLUA, VehicleClass)
 	Leaderboard = {}
 
 	local CurrentMapLeaderboard = LoadResourceFile(GetCurrentResourceName(), 'Leaderboards' .. GetOSSep() .. MapName .. '.json')
@@ -13,7 +13,7 @@ LoadLeaderboard = function(MapName, MapFileContentToLUA, Source)
 		Leaderboard = json.decode(CurrentMapLeaderboard)
 	end
 
-	TriggerClientEvent('DD:Client:UpdateLeaderboard', -1, Leaderboard)
-	TriggerClientEvent('DD:Client:SpawnMap', -1, MapName, MapFileContentToLUA, Source)
+	TriggerClientEvent('DD:C:UpdateLeaderboard', -1, Leaderboard)
+	TriggerClientEvent('DD:C:SpawnMap', -1, MapName, MapFileContentToLUA, VehicleClass)
 end
 

@@ -1,8 +1,8 @@
-function SpawnMe()
+function SpawnMe(SpawnLocation, VehicleClass)
 	local Ped = PlayerPedId(); Player = PlayerId()
 	RemoveMyVehicle()
 
-	local Vehicle = GetRandomVehicleFromClass(VehicleClass); SpawnLocation = MapReceived[3].Vehicles[Player + 1];
+	local Vehicle = GetRandomVehicleFromClass(VehicleClass);
 		  X = tonumber(SpawnLocation.X); Y = tonumber(SpawnLocation.Y); Z = tonumber(SpawnLocation.Z);
 		  Pitch = tonumber(SpawnLocation.Pitch); Roll = tonumber(SpawnLocation.Roll); Yaw = tonumber(SpawnLocation.Yaw);
 
@@ -31,29 +31,19 @@ function SpawnMe()
 
 	SetModelAsNoLongerNeeded(Vehicle)
 
-	while not IsEntityAtCoord(VehicleHandle, X, Y, Z, 2.5, 2.5, 1.0, 0, 1, 0) do
+--[[	while not IsVehicleOnAllWheels(Vehicle) do
 		Citizen.Wait(0)
 		SetEntityCoords(VehicleHandle, X, Y, Z, false, false, false, false)
 		SetEntityRotation(VehicleHandle, Pitch, Roll, Yaw, 0, true)
 		SetVehicleOnGroundProperly(VehicleHandle)
-	end
+	end]]
 
 	ScreenFadeIn(1500)
 
-	TriggerServerEvent('DD:Server:Ready', Player)
+	TriggerServerEvent('DD:S:Ready', Player)
 
 	GameStarted = true
 
 	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName(MapReceived[2])))
 end
-
-Citizen.CreateThread(function()
-	while true do
-		Citizen.Wait(0)
-		if SpawnMeNow then
-			SpawnMe()
-			SpawnMeNow = false
-		end
-	end
-end)
 

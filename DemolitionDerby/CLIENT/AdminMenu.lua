@@ -8,7 +8,7 @@ function AddMenuOptionCheckbox(Menu)
     Menu:AddItem(TwoPlayerNeeded)
     Menu.OnCheckboxChange = function(Sender, Item, Checked)
         if Item == TwoPlayerNeeded then
-			TriggerServerEvent('DD:Server:TestMode', Checked)
+			TriggerServerEvent('DD:S:TestMode', Checked)
         end
     end
 end
@@ -27,17 +27,6 @@ function AddMenuOptionList(Menu)
     end
 end
 
---[[
-AddEventHandler('gameEventTriggered', function(Name, Arguments)
-	TriggerServerEvent('DD:Server:ToRCON', '----------------------------------')
-	TriggerServerEvent('DD:Server:ToRCON', Name)
-	for Key, Value in pairs(Arguments) do
-		TriggerServerEvent('DD:Server:ToRCON', Key .. ' - ' .. Value)
-	end
-	TriggerServerEvent('DD:Server:ToRCON', '----------------------------------')
-end)
-]]
-
 function AddMenuOptionItem(Menu)
     local ForceRestart = UIMenuItem.New('Force restart', 'Forces the game to restart with the selected map.')
     Menu:AddItem(ForceRestart)
@@ -46,12 +35,15 @@ function AddMenuOptionItem(Menu)
     Menu.OnItemSelect = function(Sender, Item, Index)
         if Item == ForceRestart then
 			if GameStarted then
-				TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], AdminTestMode)
+				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
+				while GameStarted do
+					Citizen.Wait(0)
+				end
 			end
-			TriggerServerEvent('DD:Server:LoadMap', CurrentMap)
+			TriggerServerEvent('DD:S:LoadMap', CurrentMap)
         elseif Item == StopCurrentGame then
 			if GameStarted then
-				TriggerServerEvent('DD:Server:GameFinished', MapReceived[2], AdminTestMode)
+				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
 			end
         end
     end
@@ -64,34 +56,43 @@ function AddMenuTimeWeatherOptions(Menu)
     Menu:AddItem(FreezeW)
     Menu.OnCheckboxChange = function(Sender, Item, Checked)
         if Item == FreezeT then
-			TriggerServerEvent('DD:Server:FreezeTime', Checked, CurrentTime)
+			TriggerServerEvent('DD:S:FreezeTime', Checked, CurrentTime)
         elseif Item == FreezeW then
-			TriggerServerEvent('DD:Server:FreezeWeather', Checked, CurrentWeather)
+			TriggerServerEvent('DD:S:FreezeWeather', Checked, CurrentWeather)
         end
     end
 	
     local SelectWeather = UIMenuListItem.New('Select Weather', AvailableWeatherTypes, GetWeatherIndex(), 'Set the weather for every client')
     Menu:AddItem(SelectWeather)
-    local SelectHour = UIMenuListItem.New('Select Hour', {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}, GetClockHours() + 1, 'Set the hour for every client')
+	local Hours = {}
+	for Hour = 0, 23 do
+		table.insert(Hours, Hour)
+	end
+    local SelectHour = UIMenuListItem.New('Select Hour', Hours, GetClockHours() + 1, 'Set the hour for every client')
     Menu:AddItem(SelectHour)
-    local SelectMinute = UIMenuListItem.New('Select Minute', {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 ,28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59}, GetClockMinutes() + 1, 'Set the minute for every client')
+	
+ 	local Minutes = {}
+	for Minute = 0, 59 do
+		table.insert(Minutes, Minute)
+	end
+   local SelectMinute = UIMenuListItem.New('Select Minute', Minutes, GetClockMinutes() + 1, 'Set the minute for every client')
     Menu:AddItem(SelectMinute)
     Menu.OnListChange = function(Sender, Item, Index)
         if Item == SelectWeather then
             CurrentWeather = Item:IndexToItem(Index)
-			TriggerServerEvent('DD:Server:SyncTimeAndWeather', false, CurrentWeather)
+			TriggerServerEvent('DD:S:SyncTimeAndWeather', false, CurrentWeather)
 		elseif Item == SelectHour then
             CurrentTime.Hour = Item:IndexToItem(Index)
-			TriggerServerEvent('DD:Server:SyncTimeAndWeather', CurrentTime, false)
+			TriggerServerEvent('DD:S:SyncTimeAndWeather', CurrentTime, false)
 		elseif Item == SelectMinute then
             CurrentTime.Minute = Item:IndexToItem(Index)
-			TriggerServerEvent('DD:Server:SyncTimeAndWeather', CurrentTime, false)
+			TriggerServerEvent('DD:S:SyncTimeAndWeather', CurrentTime, false)
 		end
     end
 end
 
-RegisterNetEvent('DD:Client:SetUpAdminMenu')
-AddEventHandler('DD:Client:SetUpAdminMenu', function()
+RegisterNetEvent('DD:C:SetUpAdminMenu')
+AddEventHandler('DD:C:SetUpAdminMenu', function()
 	CurrentMap = AvailableMaps[1]
 	AddMenuOptionCheckbox(MainMenu)
 	AddMenuOptionList(MainMenu)

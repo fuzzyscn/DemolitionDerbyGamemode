@@ -1,4 +1,4 @@
-function SpawnMap(MapName, MapTable, ID)
+function SpawnMap(MapName, MapTable, Class)
 	if #MapTable.Vehicles >= MaximumPlayer then
 		if #SpawnedProps > 0 and NetworkIsHost() then
 			local Coords = GetEntityCoords(SpawnedProps[1], false)
@@ -20,13 +20,15 @@ function SpawnMap(MapName, MapTable, ID)
 		end
 		SpawnedProps = {}
 
-		for Key, Pickup in pairs(SpawnedPickups) do
-			while DoesPickupExist(Pickup.Id) do
-				Citizen.Wait(0)
-				RemovePickup(Pickup.Id)
+		for CategoryKey, PickupCategory in pairs(SpawnedPickups) do
+			for PickupKey, Pickup in pairs(PickupCategory) do
+				while DoesPickupExist(Pickup.Id) do
+					Citizen.Wait(0)
+					RemovePickup(Pickup.Id)
+				end
 			end
 		end
-		SpawnedPickups = {}
+		SpawnedPickups = {['Repair'] = {}, ['Boost'] = {}}
 
 		for Key, Value in ipairs(MapTable.Props) do
 			if Key == 1 then ReferenceZ = tonumber(Value.Z) end
@@ -39,11 +41,11 @@ function SpawnMap(MapName, MapTable, ID)
 				end
 				if IsRepairPickup(Value.ModelHash) then
 					local Pickup = CreatePickupRotate(160266735, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), 0.0, 0.0, 0.0, 512, 1000, 2, 1, tonumber(Value.ModelHash))
-					table.insert(SpawnedPickups, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
+					table.insert(SpawnedPickups.Repair, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
 					SetPickupRegenerationTime(Pickup, 10000)
 				elseif IsBoostPickup(Value.ModelHash) then
 					local Pickup = CreatePickupRotate(-1514616151, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), 0.0, 0.0, 0.0, 512, 1000, 2, 1, tonumber(Value.ModelHash))
-					table.insert(SpawnedPickups, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
+					table.insert(SpawnedPickups.Boost, {['Hash'] = tonumber(Value.ModelHash), ['Id'] = Pickup, ['Object'] = GetPickupObject(Pickup)})
 					SetPickupRegenerationTime(Pickup, 10000)
 				else
 					local Dynamic = false
@@ -69,33 +71,12 @@ function SpawnMap(MapName, MapTable, ID)
 				
 			end
 		end
-		if GetPlayerServerId(PlayerId()) == ID then
-			MapSpawned = true
-		end
+		
+		SpawnMe(MapReceived[3].Vehicles[PlayerId() + 1], Class)
 	else
 		GameStarted = false
 		ShowNotification('~r~ERROR!~n~Only ' .. #MapTable.Vehicles .. ' Spawnpoints.~n~' .. MaximumPlayer - #MapTable.Vehicles .. ' missing!')
 		ShowNotification('~r~' .. GetLabelText('FMMC_RANDFAIL') .. '~y~' .. GetLabelText('USJ_FAILSAFE'))
 	end
 end
-
-Citizen.CreateThread(function()
-	while true do
-		Citizen.Wait(0)
-		if MapReceived[1] then
-			SpawnMap(MapReceived[2], MapReceived[3], MapReceived[4])
-			MapReceived[1] = false
-		end
-	end
-end)
-
-Citizen.CreateThread(function()
-	while true do
-		Citizen.Wait(0)
-		if MapSpawned then
-			TriggerServerEvent('DD:Server:MapInformations', GetRandomVehicleClass())
-			MapSpawned = false
-		end
-	end
-end)
 

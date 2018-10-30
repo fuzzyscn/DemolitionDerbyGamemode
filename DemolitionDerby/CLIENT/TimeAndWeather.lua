@@ -1,16 +1,3 @@
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-		if FreezeTime then
-			NetworkOverrideClockTime(FrozenTime.Hour, FrozenTime.Minute, 0)
-		end
-		if FreezeWeather then
-			SetOverrideWeather(FrozenWeather)
-			SetWeatherTypeNowPersist(FrozenWeather)
-		end
-	end
-end)
-
 function SyncTimeAndWeather()
 	local WeatherTypes = {
 						  [GetHashKey('BLIZZARD')] = 'BLIZZARD',
@@ -31,6 +18,6 @@ function SyncTimeAndWeather()
 
 	local Time = {['Hour'] = GetClockHours(), ['Minute'] = GetClockMinutes(), ['Second'] = GetClockSeconds()}
 	local Weather = WeatherTypes[GetPrevWeatherTypeHashName()]
-	TriggerServerEvent('DD:Server:SyncTimeAndWeather', Time, Weather)
+	TriggerServerEvent('DD:S:SyncTimeAndWeather', Time, Weather)
 end
 

@@ -1,16 +1,14 @@
 GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false; IsAlive = true;
-CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1; FinishTriggered = false;
-DoCountdown = false; 
+CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1; 
+DoCountdown = false; VoteTimer = 15; CollectedBoostPickups = 0
 
 Leaderboard = {}; ShowLeaderboard = false
 
 LossAdded = false; WinAdded = false
 
-wins = 0; losses = 0; kills = 0
+WaitingForPlayer = true
 
-SpawnMeNow = false; VehicleClass = 0
-
-SpawnedProps = {}; SpawnedPickups = {}; MapReceived = {false}; MapSpawned = false; MySpawnPosition = nil; ReferenceZ = 0.0
+SpawnedProps = {}; SpawnedPickups = {['Repair'] = {}, ['Boost'] = {}}; MapReceived = {false}; MySpawnPosition = nil; ReferenceZ = 0.0
 
 IsAdmin = false; AvailableMaps = {}; CurrentMap = ''; AdminTestMode = false; CurrentWeather = ''; CurrentTime = {['Hour'] = 0, ['Minute'] = 0}
 
@@ -23,15 +21,28 @@ AvailableWeatherTypes = {
 						 'CLOUDS',
 						 'EXTRASUNNY',
 						 'FOGGY',
-						 'SNOWLIGHT',
+						 'HALLOWEEN',
 						 'NEUTRAL',
 						 'OVERCAST',
 						 'RAIN',
 						 'SMOG',
 						 'SNOW',
+						 'SNOWLIGHT',
 						 'THUNDER',
 						 'XMAS',
 						}
+
+function ResetVariables()
+	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; IsAlive = true;
+	CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; ScaleformCheckValue = -1; DoCountdown = false;
+	VoteTimer = 15; CollectedBoostPickups = 0; Leaderboard = {}; ShowLeaderboard = false; LossAdded = false; WinAdded = false;
+	WaitingForPlayer = true;
+end
+
+function round(num, numDecimalPlaces)
+	local mult = 10^(numDecimalPlaces or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
 
 function IsTableContainingKey(Table, SearchedFor)
 	if type(Table) == 'table' then
@@ -130,28 +141,20 @@ function _DrawRect(X, Y, Width, Height, R, G, B, A, Layer)
 	DrawRect(X, Y, Width, Height, R, G, B, A)
 end
 
+function _DrawSprite(Dict, Name, X, Y, Width, Height, Heading, R, G, B, A, Layer)
+	SetUiLayer(Layer)
+	DrawSprite(Dict, Name, X, Y, Width, Height, Heading, R, G, B, A)
+end
+
 function ShowNotification(Text)
 	SetNotificationTextEntry('STRING')
 	AddTextComponentSubstringPlayerName(Text)
 	DrawNotification(false, true)
 end
 
-function GetRandomVehicleClass()
-	local Class = math.random(0, 8)
-	if Class == 8 then
-		Class = 9
-	end
-	return Class
-end
-
 function GetRandomVehicleFromClass(Class)
-	local ClassVehicles = {}
-	for Key, Value in ipairs(Vehicles) do
-		if GetVehicleClassFromName(GetHashKey(Value)) == Class then
-			table.insert(ClassVehicles, Value)
-		end
-	end
-	
+	local ClassVehicles = Vehicles[Class]
+
 	local RandomIndex = math.random(#ClassVehicles)
 	local Vehicle = GetHashKey(ClassVehicles[RandomIndex])
 	if not IsModelValid(Vehicle) then
@@ -169,22 +172,93 @@ function GetRandomPed()
 end
 
 function ScreenFadeOut(Duration)
-	DoScreenFadeOut(Duration)
-	while IsScreenFadingOut() do
-		Citizen.Wait(250)
+	Duration = Duration or 1000
+	if not IsScreenFadedOut() then
+		DoScreenFadeOut(Duration)
+		while IsScreenFadingOut() do
+			Citizen.Wait(250)
+		end
 	end
 end
 
 function ScreenFadeIn(Duration)
-	DoScreenFadeIn(Duration)
-	while IsScreenFadingIn() do
-		Citizen.Wait(250)
+	Duration = Duration or 1000
+	if not IsScreenFadedIn() then
+		DoScreenFadeIn(Duration)
+		while IsScreenFadingIn() do
+			Citizen.Wait(250)
+		end
 	end
 end
 
 function Spectate(Toggle, Player)
 	NetworkSetOverrideSpectatorMode(Toggle)
 	NetworkSetInSpectatorMode(Toggle, GetPlayerPed(Player))
+end
+
+function TeleportMyBodyAway()
+	local Ped = PlayerPedId()
+	if not IsEntityAtCoord(Ped, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0, 1, 0) then
+		SetEntityVisible(Ped, false, 0)
+		SetEntityCollision(Ped, false, 0)
+		SetEntityCoords(Ped, 0.0, 0.0, 0.0, false, false, false, false)
+	end
+end
+
+function SetSpectating()
+	local LivingPlayer = GetLivingPlayers()
+	CurrentlySpectating = LivingPlayer[math.random(#LivingPlayer)]
+	while not IsPlayerAbleToPlay(CurrentlySpectating) do
+		Citizen.Wait(250)
+		LivingPlayer = GetLivingPlayers()
+		CurrentlySpectating = LivingPlayer[math.random(#LivingPlayer)]
+	end
+	Spectate(true, CurrentlySpectating)
+end
+
+function PreviousPlayer(LivingPlayer, CurrentKey)
+	if CurrentKey and CurrentKey == 1 then
+		CurrentlySpectating = LivingPlayer[#LivingPlayer]
+	else
+		CurrentlySpectating = LivingPlayer[CurrentKey - 1]
+	end
+	ScreenFadeOut(1000)
+	Spectate(true, CurrentlySpectating)
+	ScreenFadeIn(1000)
+end
+
+function NextPlayer(LivingPlayer, CurrentKey)
+	if CurrentKey and CurrentKey < #LivingPlayer then
+		CurrentlySpectating = LivingPlayer[CurrentKey + 1]
+	else
+		CurrentlySpectating = LivingPlayer[1]
+	end
+	ScreenFadeOut(1000)
+	Spectate(true, CurrentlySpectating)
+	ScreenFadeIn(1000)
+end
+
+function SpectatingControl()
+	local PedSpectating = GetPlayerPed(CurrentlySpectating)
+	local LivingPlayer = GetLivingPlayers()
+	local CurrentKey = GetKeyInTable(LivingPlayer, CurrentlySpectating)
+
+	if not IsPlayerAbleToPlay(CurrentlySpectating) then
+		NextPlayer(LivingPlayer, CurrentKey)
+	end
+
+	if not IsEntityFocus(PedSpectating) then
+		SetFocusEntity(PedSpectating)
+	end
+
+	ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', {{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
+	DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
+
+	if IsControlJustPressed(1, 174) then
+		PreviousPlayer(LivingPlayer, CurrentKey)
+	elseif IsControlJustPressed(1, 175) then
+		NextPlayer(LivingPlayer, CurrentKey)
+	end
 end
 
 function RemoveMyVehicle()
@@ -216,53 +290,59 @@ SpawnLocations = {
 			     };
 				 
 function Respawn()
+	local Ped = PlayerPedId()
+	local PlayerID = PlayerId()
+
+	ScreenFadeOut(1500)
+
 	if GetIsLoadingScreenActive() then
 		ShutdownLoadingScreen()
 		ShutdownLoadingScreenNui()
 	end
 
-	ScreenFadeOut(500)
+	SetPlayerControl(PlayerID, false, false)
+	SetPlayerInvincible(PlayerID, true)
 
-	SetPlayerControl(PlayerId(), false, false)
-	SetPlayerInvincible(PlayerId(), true)
+	SetEntityVisible(Ped, false)
+	SetEntityCollision(Ped, false)
+	FreezeEntityPosition(Ped, true)
 
-	SetEntityVisible(PlayerPedId(), false)
-	SetEntityCollision(PlayerPedId(), false)
-	FreezeEntityPosition(PlayerPedId(), true)
-
-	local SpawnValues = SpawnLocations[PlayerId() + 1]
+	local SpawnValues = SpawnLocations[PlayerID + 1]
 	if not HasModelLoaded(SpawnValues.hash) then
 		RequestModel(SpawnValues.hash)
 		while not HasModelLoaded(SpawnValues.hash) do
-			Citizen.Wait(500)
+			Citizen.Wait(250)
 		end
 	end
-	SetPlayerModel(PlayerId(), SpawnValues.hash)
+	SetPlayerModel(PlayerID, SpawnValues.hash)
 	SetModelAsNoLongerNeeded(SpawnValues.hash)
-	while not PlayerPedId() do
-		Citizen.Wait(1000)
+	while not IsEntityAPed(Ped) do
+		Citizen.Wait(250)
+		Ped = PlayerPedId()
 	end
 	RequestCollisionAtCoord(SpawnValues.x, SpawnValues.y, SpawnValues.z)
-	SetEntityCoordsNoOffset(PlayerPedId(), SpawnValues.x, SpawnValues.y, SpawnValues.z, false, false, false, true)
+	SetEntityCoordsNoOffset(Ped, SpawnValues.x, SpawnValues.y, SpawnValues.z, false, false, false, true)
 	NetworkResurrectLocalPlayer(SpawnValues.x, SpawnValues.y, SpawnValues.z, SpawnValues.h, true, true, false)
 
-	ClearPedTasksImmediately(PlayerPedId())
+	ClearPedTasksImmediately(Ped)
 
-	while not HasCollisionLoadedAroundEntity(PlayerPedId()) do
-		Citizen.Wait(500)
+	while not HasCollisionLoadedAroundEntity(Ped) do
+		Citizen.Wait(250)
 	end
 
-	ScreenFadeIn(500)
+	SetPlayerControl(PlayerID, true, false)
+	SetPlayerInvincible(PlayerID, false)
 
-	SetPlayerControl(PlayerId(), true, false)
-	SetPlayerInvincible(PlayerId(), false)
+	SetPedRandomComponentVariation(Ped, false)
+	SetPedRandomProps(Ped)
 
-	SetPedRandomComponentVariation(PlayerPedId(), false)
-	SetPedRandomProps(PlayerPedId())
-
-	SetEntityVisible(PlayerPedId(), true)
-	if not IsPedInAnyVehicle(PlayerPedId()) then SetEntityCollision(PlayerPedId(), true) end
-	FreezeEntityPosition(PlayerPedId(), false)
+	SetEntityVisible(Ped, true)
+	if not IsPedInAnyVehicle(Ped) then SetEntityCollision(Ped, true) end
+	FreezeEntityPosition(Ped, false)
+	
+	TriggerServerEvent('DD:S:Spawned')
+	
+	ScreenFadeIn(1500)
 end
 
 function PreIBUse(ScaleformName, Controls)
@@ -341,3 +421,68 @@ function GetWeatherIndex()
 	end
 	return 1
 end
+
+function EnumerateEntities(initFunc, moveFunc, disposeFunc)
+  return coroutine.wrap(function()
+	local iter, id = initFunc()
+	if not id or id == 0 then
+	  disposeFunc(iter)
+	  return
+	end
+	
+	local enum = {handle = iter, destructor = disposeFunc}
+	setmetatable(enum, entityEnumerator)
+	
+	local next = true
+	repeat
+	  coroutine.yield(id)
+	  next, id = moveFunc(iter)
+	until not next
+	
+	enum.destructor, enum.handle = nil, nil
+	disposeFunc(iter)
+  end)
+end
+
+function EnumerateObjects()
+  return EnumerateEntities(FindFirstObject, FindNextObject, EndFindObject)
+end
+
+function EnumeratePeds()
+  return EnumerateEntities(FindFirstPed, FindNextPed, EndFindPed)
+end
+
+function EnumerateVehicles()
+  return EnumerateEntities(FindFirstVehicle, FindNextVehicle, EndFindVehicle)
+end
+
+function EnumeratePickups()
+  return EnumerateEntities(FindFirstPickup, FindNextPickup, EndFindPickup)
+end
+
+function DisplayHelpMessage(Content, Type, Loop, Beep, Duration)
+	ClearHelp(1)
+	
+	Loop = Loop or false
+	Beep = Beep or false
+	Duration = Duration or -1
+	
+	BeginTextCommandDisplayHelp('STRING')
+	
+	if Type:lower() == 'string' and type(Content) == 'string' then
+		AddTextComponentSubstringPlayerName(Content)
+	elseif Type:lower() == 'label' and type(Content) == 'string' then
+		AddTextComponentSubstringTextLabel(Content)
+	elseif Type:lower() == 'labelhash' and type(Content) == 'number' then
+		AddTextComponentSubstringTextLabelHashKey(Content)
+	elseif Type:lower() == 'blip' and type(Content) == 'number' then
+		AddTextComponentSubstringBlipName(Content)
+	elseif Type:lower() == 'time' and type(Content) == 'table' then
+		AddTextComponentSubstringTime(Content[1], Content[2] or 0)
+	elseif Type:lower() == 'website' and type(Content) == 'string' then
+		AddTextComponentSubstringWebsite(Content)
+	end
+	
+	EndTextCommandDisplayHelp(0, Loop, Beep, Duration)
+end
+

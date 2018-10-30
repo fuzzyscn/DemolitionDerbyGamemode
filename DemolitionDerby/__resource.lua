@@ -11,9 +11,9 @@ dependencies {
 client_script {
 	'@NativeUI/NativeUI.lua',
 	'Configuration.lua',
+	'Vehicles.lua',
 	'CLIENT/Scaleform.lua',
 	'CLIENT/Peds.lua',
-	'CLIENT/Vehicles.lua',
 	'CLIENT/NetEvents.lua',
 	'CLIENT/Global.lua',
 	'CLIENT/AdminMenu.lua',
@@ -23,13 +23,14 @@ client_script {
 	'CLIENT/MainThread.lua',
 	'CLIENT/GamerTags.lua',
 	'CLIENT/AFKandPingKick.lua',
-	'CLIENT/UI.lua',
-	'CLIENT/Stats.lua',
+	'CLIENT/PlayerList.lua',
 	'CLIENT/Leaderboard.lua',
+	'CLIENT/Voting.lua',
 }
 
 server_script {
 	'Configuration.lua',
+	'Vehicles.lua',
 	'SERVER/General.lua',
 	'SERVER/Global.lua',
 	'SERVER/Commands.lua',
@@ -41,8 +42,3 @@ server_script {
 	'SERVER/Leaderboard.lua',
 }
 
---[[
-
-		Big thanks to throwarray for writing the piece of code to check for game events
-
-]]

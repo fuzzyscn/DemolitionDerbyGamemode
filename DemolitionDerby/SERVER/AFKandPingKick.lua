@@ -1,20 +1,21 @@
 local MaxPing = 300; MaxPingPoints = 10
 PingPoints = {}
 
-RegisterServerEvent('DD:Server:AFKKick')
-AddEventHandler('DD:Server:AFKKick', function()
+RegisterServerEvent('DD:S:AFKKick')
+AddEventHandler('DD:S:AFKKick', function()
 	DropPlayer(source, 'AFK for too long!')
 end)
 
-RegisterServerEvent('DD:Server:PingCheck')
-AddEventHandler('DD:Server:PingCheck', function()
+RegisterServerEvent('DD:S:PingCheck')
+AddEventHandler('DD:S:PingCheck', function()
 	if not PingPoints[source] then PingPoints[source] = 0 end
-	if GetPlayerPing(source) > MaxPing then
+	local CurrentPing = GetPlayerPing(source)
+	if CurrentPing > MaxPing then
 		PingPoints[source] = PingPoints[source] + 1
 	end
 	if PingPoints[source] > MaxPingPoints then
 		PingPoints[source] = 0
-		DropPlayer(source, 'Ping too high. (' .. GetPlayerPing(source) .. '/' .. MaxPing .. ')')
+		DropPlayer(source, 'Ping too high. (' .. CurrentPing .. '/' .. MaxPing .. ')')
 	end
 end)
 

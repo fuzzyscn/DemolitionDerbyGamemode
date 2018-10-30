@@ -1,53 +1,48 @@
-RegisterNetEvent('DD:Client:ToConsole')
-AddEventHandler('DD:Client:ToConsole', function(String)
+RegisterNetEvent('DD:C:ToConsole')
+AddEventHandler('DD:C:ToConsole', function(String)
 	Citizen.Trace(String)
 end)
 
-RegisterNetEvent('DD:Client:Countdown')
-AddEventHandler('DD:Client:Countdown', function(State)
+RegisterNetEvent('DD:C:Countdown')
+AddEventHandler('DD:C:Countdown', function(State)
 	StartState = State
 end)
 
-RegisterNetEvent('DD:Client:Ready')
-AddEventHandler('DD:Client:Ready', function(Player)
+RegisterNetEvent('DD:C:Ready')
+AddEventHandler('DD:C:Ready', function(Player)
 	table.insert(ReadyPlayers, Player)
 end)
 
-RegisterNetEvent('DD:Client:GameFinished')
-AddEventHandler('DD:Client:GameFinished', function()
-	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1;
-	IsAlive = true; CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; DoCountdown = false;
-	ScaleformCheckValue = -1; FinishTriggered = false; Leaderboard = {}; LossAdded = false; WinAdded = false;
-	ShowLeaderboard = false;
-
-	if NetworkIsInSpectatorMode() then
-		ClearFocus()
-		Spectate(false, PlayerId())
-	end
-	RemoveMyVehicle()
-	Respawn()
+RegisterNetEvent('DD:C:GameFinished')
+AddEventHandler('DD:C:GameFinished', function()
+	Citizen.CreateThread(function()
+		ScreenFadeOut(1000)
+		if NetworkIsInSpectatorMode() then
+			ClearFocus()
+			Spectate(false, PlayerId())
+		end
+		
+		ResetVariables()
+		RemoveMyVehicle()
+		Respawn()
+	end)
 end)
 
-RegisterNetEvent('DD:Client:SpawnMap')
-AddEventHandler('DD:Client:SpawnMap', function(MapName, MapTable, Source)
+RegisterNetEvent('DD:C:SpawnMap')
+AddEventHandler('DD:C:SpawnMap', function(MapName, MapTable, Class)
+	MapVoteMaps = {}; MapVoteMapCount = 0; PlayAgainAvailable = false; MapVoteStarted = false; MapSelectionMade = false
+	VehiclesClasses = {}; VehicleClassVoteStarted = false; VehicleClassSelectionMade = false
+	
 	MapReceived[2] = MapName
 	MapReceived[3] = MapTable
-	MapReceived[4] = Source
+	MapReceived[4] = Class
 	MapReceived[1] = true
+	
+	TriggerServerEvent('DD:S:GotLivingPlayer', GetLivingPlayers())
 end)
 
-RegisterNetEvent('DD:Client:MapInformations')
-AddEventHandler('DD:Client:MapInformations', function(RandomVehicleClass)
-	VehicleClass = RandomVehicleClass
-
-	MySpawnPosition = MapReceived[3].Vehicles[PlayerId() + 1]
-	if MySpawnPosition then
-		SpawnMeNow = true
-	end
-end)
-
-RegisterNetEvent('DD:Client:SyncTimeAndWeather')
-AddEventHandler('DD:Client:SyncTimeAndWeather', function(Time, Weather)
+RegisterNetEvent('DD:C:SyncTimeAndWeather')
+AddEventHandler('DD:C:SyncTimeAndWeather', function(Time, Weather)
 	if Time then
 		CurrentTime = Time
 		NetworkOverrideClockTime(Time.Hour, Time.Minute, Time.Second)
@@ -61,15 +56,15 @@ AddEventHandler('DD:Client:SyncTimeAndWeather', function(Time, Weather)
 	end
 end)
 
-RegisterNetEvent('DD:Client:IsGameRunning')
-AddEventHandler('DD:Client:IsGameRunning', function(Player)
+RegisterNetEvent('DD:C:IsGameRunning')
+AddEventHandler('DD:C:IsGameRunning', function(Player)
 	if NetworkIsHost() then
-		TriggerServerEvent('DD:Server:IsGameRunningAnswer', Player, GameStarted, FreezeTime, FrozenTime, FreezeWeather, FrozenWeather)
+		TriggerServerEvent('DD:S:IsGameRunningAnswer', Player, GameStarted, FreezeTime, FrozenTime, FreezeWeather, FrozenWeather)
 	end
 end)
 
-RegisterNetEvent('DD:Client:IsGameRunningAnswer')
-AddEventHandler('DD:Client:IsGameRunningAnswer', function(State, FreezeT, Time, FreezeW, Weather)
+RegisterNetEvent('DD:C:IsGameRunningAnswer')
+AddEventHandler('DD:C:IsGameRunningAnswer', function(State, FreezeT, Time, FreezeW, Weather)
 	GameStarted = State; GameRunning = State; MidGameJoiner = State
 	if FreezeT ~= nil then
 		FreezeTime = FreezeT
@@ -88,83 +83,103 @@ AddEventHandler('DD:Client:IsGameRunningAnswer', function(State, FreezeT, Time, 
 	if not GameStarted then
 		Respawn()
 	else
-		TriggerServerEvent('DD:Server:GetLeaderboard')
+		TriggerServerEvent('DD:S:GetLeaderboard')
 	end
 end)
 
-RegisterNetEvent('DD:Client:GotAdminInfos')
-AddEventHandler('DD:Client:GotAdminInfos', function(Allowed, Maps)
+RegisterNetEvent('DD:C:GotAdminInfos')
+AddEventHandler('DD:C:GotAdminInfos', function(Allowed, Maps)
 	IsAdmin = Allowed
 	AvailableMaps = Maps
-	TriggerEvent('DD:Client:SetUpAdminMenu')
+	TriggerEvent('DD:C:SetUpAdminMenu')
 end)
 
-RegisterNetEvent('DD:Client:TestMode')
-AddEventHandler('DD:Client:TestMode', function(TestMode, Admin)
+RegisterNetEvent('DD:C:TestMode')
+AddEventHandler('DD:C:TestMode', function(TestMode, Admin)
 	AdminTestMode = TestMode
 	if AdminTestMode then
-		TestModeAdmin = Admin
 		NeededPlayer = 1
 	else
-		TestModeAdmin = nil
 		NeededPlayer = 2
 	end
 end)
 
-RegisterNetEvent('DD:Client:AdminDisconnected')
-AddEventHandler('DD:Client:AdminDisconnected', function()
+RegisterNetEvent('DD:C:AdminDisconnected')
+AddEventHandler('DD:C:AdminDisconnected', function()
 	AdminTestMode = false
-	TestModeAdmin = nil
 	NeededPlayer = 2
 end)
 
-RegisterNetEvent('DD:Client:FreezeTime')
-AddEventHandler('DD:Client:FreezeTime', function(FreezeT, Time)
+RegisterNetEvent('DD:C:FreezeTime')
+AddEventHandler('DD:C:FreezeTime', function(FreezeT, Time)
 	FrozenTime = Time
 	CurrentTime = Time
 	FreezeTime = FreezeT
 end)
 
-RegisterNetEvent('DD:Client:FreezeWeather')
-AddEventHandler('DD:Client:FreezeWeather', function(FreezeW, Weather)
+RegisterNetEvent('DD:C:FreezeWeather')
+AddEventHandler('DD:C:FreezeWeather', function(FreezeW, Weather)
 	FrozenWeather = Weather
 	CurrentWeather = FrozenWeather
 	FreezeWeather = FreezeW
 end)
 
 AddEventHandler('onClientGameTypeStart', function()
-	if GetIsLoadingScreenActive() then
-		ShutdownLoadingScreen()
-		ShutdownLoadingScreenNui()
-	end
+	ScreenFadeOut(0)
 
-	TriggerServerEvent('DD:Server:GetAdminInfos')
+	TriggerServerEvent('DD:S:GetAdminInfos')
 
 	if NetworkGetNumConnectedPlayers() > 1 then
-		TriggerServerEvent('DD:Server:IsGameRunning')
+		TriggerServerEvent('DD:S:IsGameRunning')
 	else
-		TriggerEvent('DD:Client:IsGameRunningAnswer', false)
+		TriggerEvent('DD:C:IsGameRunningAnswer', false)
 	end
 end)
 
-RegisterNetEvent('DD:Client:UpdateLeaderboard')
-AddEventHandler('DD:Client:UpdateLeaderboard', function(LB)
+RegisterNetEvent('DD:C:UpdateLeaderboard')
+AddEventHandler('DD:C:UpdateLeaderboard', function(LB)
 	Leaderboard = LB
 end)
 
-RegisterNetEvent('DD:Client:PickupCollected')
-AddEventHandler('DD:Client:PickupCollected', function(Pickup)
+RegisterNetEvent('DD:C:PickupCollected')
+AddEventHandler('DD:C:PickupCollected', function(Pickup)
 	if Pickup[2] == PlayerId() and IsBoostPickup(Pickup[5]) then
-		local Vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
-		local SpeedVector = GetEntitySpeedVector(Vehicle, true)
-		if SpeedVector.y > 0.0 then
-			SetVehicleForwardSpeed(Vehicle, 60.0)
+		if CollectedBoostPickups < 3 then
+			DisplayHelpMessage(GetLabelText('VEX_SM_HELP1'):gsub('INPUT_FRONTEND_LS', 'INPUT_VEH_HORN'), 'string', false, true, 3000)
+			
+			CollectedBoostPickups = CollectedBoostPickups + 1
 		end
 	end
 end)
 
 AddEventHandler('gameEventTriggered', function(Name, Arguments)
 	if Name == 'CEventNetworkPlayerCollectedPickup' then
-		TriggerEvent('DD:Client:PickupCollected', Arguments);
+		TriggerEvent('DD:C:PickupCollected', Arguments)
 	end
 end)
+
+RegisterNetEvent('DD:C:MapVote')
+AddEventHandler('DD:C:MapVote', function(Maps, MapCount, IsFirstRound)
+	StartMapVote(Maps, MapCount, IsFirstRound)
+end)
+
+RegisterNetEvent('DD:C:VehicleClassVote')
+AddEventHandler('DD:C:VehicleClassVote', function(Classes)
+	StartVehicleClassVote(Classes)
+end)
+
+RegisterNetEvent('DD:C:VoteCountdown')
+AddEventHandler('DD:C:VoteCountdown', function(Timer)
+	VoteTimer = Timer
+end)
+
+RegisterNetEvent('DD:C:GetLivingPlayer')
+AddEventHandler('DD:C:GetLivingPlayer', function()
+	TriggerServerEvent('DD:S:GotLivingPlayer', GetLivingPlayers())
+end)
+
+RegisterNetEvent('DD:C:WaitingForPlayer')
+AddEventHandler('DD:C:WaitingForPlayer', function(Waiting)
+	WaitingForPlayer = Waiting
+end)
+

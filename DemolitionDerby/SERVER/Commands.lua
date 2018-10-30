@@ -1,4 +1,11 @@
-RegisterCommand('bugreport', function(Source, Arguments, RawCommand)
+local HelpMessage = [[
+Available Commands:
+	--> Help - Shows this help message.
+	--> Disconnect - Lets you disconnect, when the pausemenu is inactive.
+	--> Bugreport - Report a bug you experienced.
+]]
+
+RegisterCommand('Bugreport', function(Source, Arguments, RawCommand)
 	local date = os.date('*t')
 	for Key, Value in pairs(date) do
 		if type(Value) ~= 'boolean' and Value < 10 then
@@ -23,12 +30,12 @@ RegisterCommand('bugreport', function(Source, Arguments, RawCommand)
 	print(GetPlayerName(Source) .. ' reported a bug!\n>> ' .. Report)
 end, false)
 
-RegisterCommand('disconnect', function(Source, Arguments, RawCommand)
+RegisterCommand('Disconnect', function(Source, Arguments, RawCommand)
 	DropPlayer(Source, 'Disconnected.')
 end, false)
 
-RegisterCommand('help', function(Source, Arguments, RawCommand)
-	TriggerClientEvent('chatMessage', Source, '', {0, 153, 255}, '\nThe host has to start the game.\nThe current host is ' .. GetPlayerName(GetHostId()) .. '\nAvailable Commands:\n--> Disconnect - Lets you disconnect, when the pausemenu is inactive.\n--> Bugreport - Report a bug you experienced.\n')
-	TriggerClientEvent('DD:Client:ToConsole', Source, '\nThe host has to start the game.\nThe current host is ' .. GetPlayerName(GetHostId()) .. '\nAvailable Commands:\n--> Disconnect - Lets you disconnect, when the pausemenu is inactive.\n--> Bugreport - Report a bug you experienced.\n')
+RegisterCommand('Help', function(Source, Arguments, RawCommand)
+	TriggerClientEvent('chatMessage', Source, '', {0, 153, 255}, HelpMessage)
+	TriggerClientEvent('DD:C:ToConsole', Source, HelpMessage)
 end, false)
 
