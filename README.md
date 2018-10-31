@@ -9,7 +9,7 @@ It may not always be the best way to do things, but that is alright for now.
 
 [Join our Discord server](https://discordapp.com/invite/CupFkQN)
 
-[Support me keeping the server running](https://www.paypal.me/SaitOcakoglu)
+[Help keeping the server running](https://www.paypal.me/SaitOcakoglu)
 
 ## How to play it?
 
