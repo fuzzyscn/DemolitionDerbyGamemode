@@ -7,7 +7,7 @@ It is still at the very beginning and a work in progess.
 The goal of this project is to create a Demolition Derby experience in FiveM. Most of the basic stuff needed is already done.
 It may not always be the best way to do things, but that is alright for now.
 
-[Disord](https://discordapp.com/invite/CupFkQN)
+[Join our Discord server](https://discordapp.com/invite/CupFkQN)
 
 [Support me keeping the server running](https://www.paypal.me/SaitOcakoglu)
 
