@@ -13,7 +13,8 @@ It may not always be the best way to do things, but that is alright for now.
 
 ## How to play it?
 
-You can host it yourself or you play on the official testing Server: Official Demolition Derby by FlatracerMOD & Scotty 207.180.229.228:30120
+You can host it yourself or you play on the official testing Server: Official Demolition Derby by FlatracerMOD & Scotty
+#### 207.180.229.228:30120
 
 ## How to contribute?
 
