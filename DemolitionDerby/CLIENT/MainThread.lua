@@ -1,29 +1,34 @@
+--[[
 local function Countdown(State)
 	if State then
-		local CountdownMessages = {{GetLabelText('collision_yq6ipu7') .. '!', ''}, {'...', ''}, {GetLabelText('collision_3mddt3c'), ''}}
 		if not HasScaleformMovieLoaded(CountdownScaleform) then
-			CountdownScaleform = RequestScaleformMovie('MP_BIG_MESSAGE_FREEMODE')
+			CountdownScaleform = RequestScaleformMovie('COUNTDOWN')
 			while not HasScaleformMovieLoaded(CountdownScaleform) do
 				Citizen.Wait(0)
 			end
 		end
-
+		local R, G, B, A
+		BeginScaleformMovieMethod(CountdownScaleform, 'SET_MESSAGE')
+		
 		if State ~= 0 then
-			BeginScaleformMovieMethod(CountdownScaleform, 'SHOW_SHARD_WASTED_MP_MESSAGE')
-			PushScaleformMovieMethodParameterString('~r~' .. CountdownMessages[State][1])
-			PushScaleformMovieMethodParameterString('~y~' .. CountdownMessages[State][2])
-			EndScaleformMovieMethod()
-			DrawScaleformMovieFullscreen(CountdownScaleform, 255, 255, 255, 255)
+			R, G, B, A = 240, 200, 80, 255
+			BeginTextCommandScaleformString('NUMBER')
+			AddTextComponentInteger(State)
 		else
-			if not GameRunning then
-				DoCountdown = false
-				GameRunning = true
-			end
+			R, G, B, A = 114, 204, 114, 255
+			BeginTextCommandScaleformString('CNTDWN_GO')
 		end
+		EndTextCommandScaleformString()
+		PushScaleformMovieMethodParameterInt(R)
+		PushScaleformMovieMethodParameterInt(G)
+		PushScaleformMovieMethodParameterInt(B)
+		PushScaleformMovieMethodParameterInt(A)
+		PushScaleformMovieMethodParameterBool(true)
+		EndScaleformMovieMethod()
+		DrawScaleformMovieFullscreen(CountdownScaleform, 255, 255, 255, 100, 0)
 	end
 end
 
---[[
 local function Finished(IsLastPlayer)
 	local Deleted = 0
 	ScreenFadeOut(1500)
@@ -40,7 +45,7 @@ local function Finished(IsLastPlayer)
 	end
 	
 	for Ped in EnumeratePeds() do
-		if not IsPedAPlayer(Ped) and Deleted > 100 then
+		if not IsPedAPlayer(Ped) and Deleted < 100 then
 			Deleted = Deleted + 1
 			FreezeEntityPosition(Ped, false)
 			SetEntityAsMissionEntity(Ped, false, false)
@@ -51,7 +56,7 @@ local function Finished(IsLastPlayer)
 	end
 	Deleted = 0
 	for Vehicle in EnumerateVehicles() do
-		if Deleted > 100 then
+		if Deleted < 100 then
 			Deleted = Deleted + 1
 			FreezeEntityPosition(Vehicle, false)
 			SetEntityAsMissionEntity(Vehicle, false, false)
@@ -101,7 +106,7 @@ Citizen.CreateThread(function()
 		if MapReceived[1] then
 			ScreenFadeOut(1500)
 
-			SpawnMap(MapReceived[2], MapReceived[3], MapReceived[4])
+			SpawnMap(MapReceived[2], MapReceived[3], MapReceived[4], MapReceived[5])
 			MapReceived[1] = false
 		end
 		
@@ -113,10 +118,20 @@ Citizen.CreateThread(function()
 			SetWeatherTypeNowPersist(FrozenWeather)
 		end
 		
+		HideHudComponentThisFrame(1)
+		HideHudComponentThisFrame(2)
+		HideHudComponentThisFrame(3)
+		HideHudComponentThisFrame(4)
+		HideHudComponentThisFrame(5)
+		HideHudComponentThisFrame(7)
+		HideHudComponentThisFrame(9)
+		HideHudComponentThisFrame(13)
+		HideHudComponentThisFrame(16)
+		HideHudComponentThisFrame(17)
+		HideHudComponentThisFrame(18)
 		HideHudAndRadarThisFrame()
 		BlockWeaponWheelThisFrame()
 		SetRadioToStationName('OFF')
-		SetCurrentPedWeapon(PlayerPedId(), GetHashKey('WEAPON_UNARMED'), true)
 	end
 end)
 
@@ -125,31 +140,87 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 	end
 
-	local Players, LivingPlayer, ScaleformHandle
+	local Players, LivingPlayer, IBScaleformHandle
 	while true do
 		Citizen.Wait(0)
 		Players = GetPlayers()
 		LivingPlayer = GetLivingPlayers()
 		local Ped = PlayerPedId(); Player = PlayerId()
+
 		if not GameStarted and not GameRunning then
+			SetPedArmour(Ped, 100)
+			SetEntityHealth(Ped, 200)
+			ClearPedBloodDamage(Ped)
+			ResetPedVisibleDamage(Ped)
+			ClearPedLastWeaponDamage(Ped)
+			
 			if IsPlayerAbleToPlay(Player) then
 				SetEntityInvincible(Ped, true)
+			end
+			
+			if IsFirstSpawn then
+				AddTextEntry('DD:FirstSpawnMessageHeader', '~r~This Server is still in development')
+				AddTextEntry('DD:FirstSpawnMessageLine1', 'If you encounter any problems, please check the command "/help" out to see how to report bugs.~n~Also you can contact me in the official Demolition Derby Gamemode Discord Channel: ~y~discord.gg/CupFkQN~n~~n~')
+				AddTextEntry('DD:FirstSpawnMessageLine2', '~y~How to play:~n~~s~The goal is to destroy the other players by damaging their vehicle or pushing them off the platform.~n~To begin the game just vote for a map ond vehicle class.~n~If you\'re alone on the server the game starts as a training mode.~n~')
+
+				local Timer = GetGameTimer()
+				while not (IsControlJustPressed(2, 176) or IsDisabledControlJustPressed(2, 176) or GetGameTimer() - Timer > 10000) do
+					Citizen.Wait(0)
+					SetWarningMessageWithHeader('DD:FirstSpawnMessageHeader', 'DD:FirstSpawnMessageLine1', 2, 'DD:FirstSpawnMessageLine2', false, 0, false, 0, false)
+				end
+
+				IsFirstSpawn = false
+			end
+			while ClientIsConnecting do
+				Citizen.Wait(0)
+				if ScaleformCheckValue ~= 1 and not MainMenu:Visible() and not SubMenu:Visible() then
+					IBScaleformHandle = PreIBUse({{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('FM_LSC_LF_J')}})
+					ScaleformCheckValue = 1
+				end
+				DrawScaleformMovieFullscreen(IBScaleformHandle, 255, 255, 255, 255, 0)
 			end
 		elseif GameStarted and not GameRunning then
 			while WaitingForPlayer do
 				Citizen.Wait(0)
 				if ScaleformCheckValue ~= 0 and not MainMenu:Visible() and not SubMenu:Visible() then
-					ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', {{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('FM_COR_PRDY'):gsub('~1~', #ReadyPlayers, 1):gsub('~1~', #LivingPlayer)}})
+					IBScaleformHandle = PreIBUse({{['Slot'] = 0, ['Control'] = 'Load', ['Text'] = GetLabelText('FM_COR_PRDY'):gsub('~1~', #ReadyPlayers, 1):gsub('~1~', #LivingPlayer)}})
 					ScaleformCheckValue = 0
 				end
-				DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
+				DrawScaleformMovieFullscreen(IBScaleformHandle, 255, 255, 255, 255, 0)
 			end
 
 			DoCountdown = true
 			while not GameRunning and DoCountdown do
 				Citizen.Wait(0)
 				if StartState then
-					Countdown(StartState)
+					if not HasScaleformMovieLoaded(CountdownScaleform) then
+						CountdownScaleform = RequestScaleformMovie('COUNTDOWN')
+						while not HasScaleformMovieLoaded(CountdownScaleform) do
+							Citizen.Wait(0)
+						end
+					end
+					local R, G, B, A
+
+					BeginScaleformMovieMethod(CountdownScaleform, 'SET_MESSAGE')
+
+					if StartState ~= 0 then
+						R, G, B, A = 240, 200, 80, 255
+						BeginTextCommandScaleformString('NUMBER')
+						AddTextComponentInteger(StartState)
+					else
+						R, G, B, A = 114, 204, 114, 255
+						BeginTextCommandScaleformString('CNTDWN_GO')
+					end
+					EndTextCommandScaleformString()
+					PushScaleformMovieMethodParameterInt(R)
+					PushScaleformMovieMethodParameterInt(G)
+					PushScaleformMovieMethodParameterInt(B)
+					PushScaleformMovieMethodParameterInt(A)
+					PushScaleformMovieMethodParameterBool(true)
+
+					EndScaleformMovieMethod()
+
+					DrawScaleformMovieFullscreen(CountdownScaleform, 255, 255, 255, 100, 0)
 				end
 			end
 		elseif GameStarted and GameRunning then
@@ -215,15 +286,9 @@ Citizen.CreateThread(function()
 
 				local MyCoords = GetEntityCoords(Ped, true)
 				
-				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(Vehicle) or not IsVehicleDriveable(Vehicle, true) then
+				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(Vehicle) or not IsVehicleDriveable(Vehicle, true) or GetEntityHealth(Vehicle) <= CriticalVehicleDamage or GetVehicleEngineHealth(Vehicle) <= 300 or GetVehiclePetrolTankHealth(Vehicle) <= 600 then
 					NetworkExplodeVehicle(Vehicle, true, false, 0)
-				end
-
-				if (#LivingPlayer == 1 and IsPlayerAbleToPlay(Player) and #Players > 1) and not AdminTestMode then
-					if not WinAdded then
-						TriggerServerEvent('DD:S:UpdateLeaderboard', true)
-						WinAdded = true
-					end
+					SetEntityHealth(Ped, 0)
 				end
 			else
 				if (IsControlJustReleased(13, 199) or IsControlJustReleased(13, 200)) and GetCurrentFrontendMenu() == -1 then
@@ -248,15 +313,8 @@ Citizen.CreateThread(function()
 					TeleportMyBodyAway()
 					SetSpectating()
 					ScreenFadeIn(1500)
-				end
-				if #LivingPlayer > 1 then
+				elseif NetworkIsInSpectatorMode and #LivingPlayer > 1 then
 					SpectatingControl()
-				else
-					if not AdminTestMode then
-						ScreenFadeOut(1500)
-						RemoveMyVehicle()
-						TeleportMyBodyAway()
-					end
 				end
 			end
 		end

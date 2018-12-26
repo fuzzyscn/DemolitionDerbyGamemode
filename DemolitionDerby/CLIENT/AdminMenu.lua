@@ -28,25 +28,25 @@ function AddMenuOptionList(Menu)
 end
 
 function AddMenuOptionItem(Menu)
-    local ForceRestart = UIMenuItem.New('Force restart', 'Forces the game to restart with the selected map.')
-    Menu:AddItem(ForceRestart)
-    local StopCurrentGame = UIMenuItem.New('Stop current round', 'Stops the current round and spawns the players back in the apartments.')
-    Menu:AddItem(StopCurrentGame)
-    Menu.OnItemSelect = function(Sender, Item, Index)
-        if Item == ForceRestart then
+	local ForceRestart = UIMenuItem.New('Force restart', 'Forces the game to restart with the selected map.')
+	Menu:AddItem(ForceRestart)
+--	local StopCurrentGame = UIMenuItem.New('Stop current round', 'Stops the current round and spawns the players back in the apartments.')
+--	Menu:AddItem(StopCurrentGame)
+	Menu.OnItemSelect = function(Sender, Item, Index)
+		if Item == ForceRestart then
 			if GameStarted then
-				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
+--				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
 				while GameStarted do
 					Citizen.Wait(0)
 				end
 			end
 			TriggerServerEvent('DD:S:LoadMap', CurrentMap)
-        elseif Item == StopCurrentGame then
-			if GameStarted then
-				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
-			end
-        end
-    end
+--		elseif Item == StopCurrentGame then
+--			if GameStarted then
+--				TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
+--			end
+		end
+	end
 end
 
 function AddMenuTimeWeatherOptions(Menu)
@@ -115,7 +115,8 @@ Citizen.CreateThread(function()
 		
 		CurrentTime.Hour = GetClockHours()
 		CurrentTime.Minute = GetClockMinutes()
-		
+
+--[[		
         if (IsControlJustPressed(1, 57) or IsDisabledControlJustPressed(1, 57)) and IsAdmin then
             if MainMenu:Visible() or SubMenu:Visible() then
 				MainMenu:Visible(false)
@@ -127,5 +128,6 @@ Citizen.CreateThread(function()
         elseif (IsControlJustReleased(1, 177) or IsDisabledControlJustReleased(1, 177)) then
 			ScaleformCheckValue = -1
 		end
+]]
     end
 end)

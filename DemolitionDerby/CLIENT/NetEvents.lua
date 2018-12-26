@@ -4,8 +4,15 @@ AddEventHandler('DD:C:ToConsole', function(String)
 end)
 
 RegisterNetEvent('DD:C:Countdown')
-AddEventHandler('DD:C:Countdown', function(State)
-	StartState = State
+AddEventHandler('DD:C:Countdown', function(State, GoPhase)
+	if State >= 1 then
+		PlaySoundFrontend(-1, '3_2_1', 'HUD_MINI_GAME_SOUNDSET', 1)
+	end
+	if GoPhase then
+		PlaySoundFrontend(-1, 'GO', 'HUD_MINI_GAME_SOUNDSET', 1)
+	else
+		StartState = State
+	end
 end)
 
 RegisterNetEvent('DD:C:Ready')
@@ -14,18 +21,20 @@ AddEventHandler('DD:C:Ready', function(Player)
 end)
 
 RegisterNetEvent('DD:C:GameFinished')
-AddEventHandler('DD:C:GameFinished', function()
-	Citizen.CreateThread(function()
-		ScreenFadeOut(1000)
-		if NetworkIsInSpectatorMode() then
-			ClearFocus()
-			Spectate(false, PlayerId())
-		end
-		
-		ResetVariables()
-		RemoveMyVehicle()
-		Respawn()
-	end)
+AddEventHandler('DD:C:GameFinished', function(NumberOfSpawnedPlayers)
+	if NumberOfSpawnedPlayers > 1 and not AdminTestMode and IsPlayerAbleToPlay(PlayerId()) then
+		TriggerServerEvent('DD:S:UpdateLeaderboard', true)
+	end
+
+	ScreenFadeOut(1000)
+	if NetworkIsInSpectatorMode() then
+		ClearFocus()
+		Spectate(false, PlayerId())
+	end
+	
+	ResetVariables()
+	RemoveMyVehicle()
+	Respawn()
 end)
 
 RegisterNetEvent('DD:C:SpawnMap')
@@ -36,6 +45,7 @@ AddEventHandler('DD:C:SpawnMap', function(MapName, MapTable, Class)
 	MapReceived[2] = MapName
 	MapReceived[3] = MapTable
 	MapReceived[4] = Class
+	MapReceived[5] = true
 	MapReceived[1] = true
 	
 	TriggerServerEvent('DD:S:GotLivingPlayer', GetLivingPlayers())
@@ -56,16 +66,14 @@ AddEventHandler('DD:C:SyncTimeAndWeather', function(Time, Weather)
 	end
 end)
 
-RegisterNetEvent('DD:C:IsGameRunning')
-AddEventHandler('DD:C:IsGameRunning', function(Player)
-	if NetworkIsHost() then
-		TriggerServerEvent('DD:S:IsGameRunningAnswer', Player, GameStarted, FreezeTime, FrozenTime, FreezeWeather, FrozenWeather)
-	end
+RegisterNetEvent('DD:C:GameRunning')
+AddEventHandler('DD:C:GameRunning', function()
+	DoCountdown = false
+	GameRunning = true
 end)
 
-RegisterNetEvent('DD:C:IsGameRunningAnswer')
-AddEventHandler('DD:C:IsGameRunningAnswer', function(State, FreezeT, Time, FreezeW, Weather)
-	GameStarted = State; GameRunning = State; MidGameJoiner = State
+RegisterNetEvent('DD:C:GameStatus')
+AddEventHandler('DD:C:GameStatus', function(State, NumberOfPlayers, FreezeT, Time, FreezeW, Weather)
 	if FreezeT ~= nil then
 		FreezeTime = FreezeT
 	end
@@ -80,10 +88,20 @@ AddEventHandler('DD:C:IsGameRunningAnswer', function(State, FreezeT, Time, Freez
 		FrozenWeather = Weather
 		CurrentWeather = Weather
 	end
-	if not GameStarted then
-		Respawn()
-	else
+	if State then
+		GameStarted = true
+		GameRunning = true
+		MidGameJoiner = true
+		
+		if not MapReceived[1] then
+			TriggerServerEvent('DD:S:GetMap')
+		end
+		StopLoadingScreen()
 		TriggerServerEvent('DD:S:GetLeaderboard')
+	else
+		if NumberOfPlayers ~= 2 then
+			Respawn()
+		end
 	end
 end)
 
@@ -127,13 +145,28 @@ end)
 AddEventHandler('onClientGameTypeStart', function()
 	ScreenFadeOut(0)
 
+	local Ped = PlayerPedId()
+	if not HasModelLoaded(SpawnValues.Hash) then
+		RequestModel(SpawnValues.Hash)
+		while not HasModelLoaded(SpawnValues.Hash) do
+			Citizen.Wait(250)
+		end
+	end
+	SetPlayerModel(PlayerId(), SpawnValues.Hash)
+	SetModelAsNoLongerNeeded(SpawnValues.Hash)
+	while not IsEntityAPed(Ped) do
+		Citizen.Wait(250)
+		Ped = PlayerPedId()
+	end
+	
+	SetPedRandomComponentVariation(Ped, false)
+	SetPedRandomProps(Ped)
+	SetCanAttackFriendly(Ped, true, false)
+	NetworkSetFriendlyFireOption(true)
+
 	TriggerServerEvent('DD:S:GetAdminInfos')
 
-	if NetworkGetNumConnectedPlayers() > 1 then
-		TriggerServerEvent('DD:S:IsGameRunning')
-	else
-		TriggerEvent('DD:C:IsGameRunningAnswer', false)
-	end
+	TriggerServerEvent('DD:S:GetGameStatus')
 end)
 
 RegisterNetEvent('DD:C:UpdateLeaderboard')
@@ -160,6 +193,7 @@ end)
 
 RegisterNetEvent('DD:C:MapVote')
 AddEventHandler('DD:C:MapVote', function(Maps, MapCount, IsFirstRound)
+	ClientIsConnecting = false
 	StartMapVote(Maps, MapCount, IsFirstRound)
 end)
 
@@ -181,5 +215,22 @@ end)
 RegisterNetEvent('DD:C:WaitingForPlayer')
 AddEventHandler('DD:C:WaitingForPlayer', function(Waiting)
 	WaitingForPlayer = Waiting
+end)
+
+RegisterNetEvent('DD:C:ClientIsJoiningOrSpawning')
+AddEventHandler('DD:C:ClientIsJoiningOrSpawning', function()
+	ClientIsConnecting = true
+end)
+
+RegisterNetEvent('DD:C:GotMap')
+AddEventHandler('DD:C:GotMap', function(MapName, MapTable)
+	MapVoteMaps = {}; MapVoteMapCount = 0; PlayAgainAvailable = false; MapVoteStarted = false; MapSelectionMade = false
+	VehiclesClasses = {}; VehicleClassVoteStarted = false; VehicleClassSelectionMade = false
+	
+	MapReceived[2] = MapName
+	MapReceived[3] = MapTable
+	MapReceived[4] = Class
+	MapReceived[5] = false
+	MapReceived[1] = true
 end)
 

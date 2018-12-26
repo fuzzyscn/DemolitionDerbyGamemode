@@ -9,128 +9,144 @@ AddEventHandler('DD:S:SyncTimeAndWeather', function(Time, Weather)
 end)
 
 RegisterServerEvent('DD:S:FreezeTime')
-AddEventHandler('DD:S:FreezeTime', function(FreezeT, Time)
-	TriggerClientEvent('DD:C:FreezeTime', -1, FreezeT, Time)
+AddEventHandler('DD:S:FreezeTime', function(FreezeTime, Time)
+	FreezeT = FreezeTime
+	FrozenTime = Time
+	TriggerClientEvent('DD:C:FreezeTime', -1, FreezeTime, Time)
 end)
 
 RegisterServerEvent('DD:S:FreezeWeather')
-AddEventHandler('DD:S:FreezeWeather', function(FreezeW, Weather)
-	TriggerClientEvent('DD:C:FreezeWeather', -1, FreezeW, Weather)
+AddEventHandler('DD:S:FreezeWeather', function(FreezeWeather, Weather)
+	FreezeW = FreezeWeather
+	FrozenWeather = Weather
+	TriggerClientEvent('DD:C:FreezeWeather', -1, FreezeWeather, Weather)
 end)
 
 RegisterServerEvent('DD:S:GameFinished')
-AddEventHandler('DD:S:GameFinished', function(MapName, IsTestMode)
-	if not IsTestMode then
-		SaveLeaderboard(MapName)
-	end
-	
+AddEventHandler('DD:S:GameFinished', function(NumberOfSpawnedPlayers)
 	ResetVariables()
 
-	TriggerClientEvent('DD:C:GameFinished', -1)
+	TriggerClientEvent('DD:C:GameFinished', -1, NumberOfSpawnedPlayers)
 end)
 
-RegisterServerEvent('DD:S:IsGameRunning')
-AddEventHandler('DD:S:IsGameRunning', function()
-	if GetNumPlayerIndices() > 1 then
-		TriggerClientEvent('DD:C:IsGameRunning', -1, source)
-	else
-		TriggerClientEvent('DD:C:IsGameRunningAnswer', source, false)
-	end
-end)
-
-RegisterServerEvent('DD:S:IsGameRunningAnswer')
-AddEventHandler('DD:S:IsGameRunningAnswer', function(Player, State, FreezeT, Time, FreezeW, Weather)
-	TriggerClientEvent('DD:C:IsGameRunningAnswer', Player, State, FreezeT, Time, FreezeW, Weather)
+RegisterServerEvent('DD:S:GetGameStatus')
+AddEventHandler('DD:S:GetGameStatus', function()
+	local Source = source
+	TriggerClientEvent('DD:C:GameStatus', Source, GameStarted, GetNumPlayerIndices(), FreezeT, FrozenTime, FreezeW, Weather)
 end)
 
 RegisterServerEvent('DD:S:GetAdminInfos')
 AddEventHandler('DD:S:GetAdminInfos', function()
-	TriggerClientEvent('DD:C:GotAdminInfos', source, IsPlayerAceAllowed(source, 'DD'), Maps)
+	local Source = source
+	TriggerClientEvent('DD:C:GotAdminInfos', Source, IsPlayerAceAllowed(Source, 'DD'), Maps)
 end)
 
 RegisterServerEvent('DD:S:TestMode')
 AddEventHandler('DD:S:TestMode', function(TestMode)
+	local Source = source
 	AdminTestMode = TestMode
-	AdminTestModeAdmin = GetIdentifier(source, 'license')
+	AdminTestModeAdmin = GetIdentifier(Source, 'license')
 	TriggerClientEvent('DD:C:TestMode', -1, AdminTestMode)
 end)
 
 RegisterServerEvent('DD:S:LoadMap')
 AddEventHandler('DD:S:LoadMap', function(Map, VehicleClass)
-	local Source = tonumber(source)
-	if Source == nil then Source = tonumber(GetPlayers()[1]) end
-	Citizen.CreateThread(function()
-		if IsTableContainingValue(Maps, Map[1], true) then
-			LastMap = Map
-			local MapFile = io.open('DemolitionDerbyMaps' .. GetOSSep() .. Map[1], 'r')
-			local MapFileContent = MapFile:read('*a')
-			local MapFileContentToLUA = MapToLUA(MapFileContent)
-			MapFile:close()
-			LoadLeaderboard(Map[1], MapFileContentToLUA, VehicleClass)
-		else
-			print('ERROR!\nMap not found!')
-		end
-	end)
+	if IsTableContainingValue(Maps, Map[1], true) then
+		LastMap = Map
+		local MapFile = io.open(ConvertedMapsPath .. Map[1] .. '.json', 'r')
+		local MapFileContent = MapFile:read('*a')
+		MapFile:close()
+		LoadLeaderboard(Map[1], json.decode(MapFileContent), VehicleClass)
+	else
+		print('ERROR!\nMap not found!')
+	end
 end)
 
 RegisterServerEvent('DD:S:UpdateLeaderboard')
-AddEventHandler('DD:S:UpdateLeaderboard', function(IsWin)
+AddEventHandler('DD:S:UpdateLeaderboard', function(IsWin, Client)
 	print('Server Event \'DD:S:UpdateLeaderboard\' called')
-	local Source = source
+	local Source = source or Client
 	local Identifier = GetIdentifier(Source, 'license')
+	if Identifier then
+		if not IsTableContainingKey(Leaderboard, Identifier) then
+			Leaderboard[Identifier] = {['Name'] = GetPlayerName(Source), ['Won'] = 0, ['Lost'] = 0}
+		end
 
-	if not IsTableContainingKey(Leaderboard, Identifier) then
-		Leaderboard[Identifier] = {['Name'] = GetPlayerName(Source), ['Won'] = 0, ['Lost'] = 0}
+		Leaderboard[Identifier].Name = GetPlayerName(Source)
+
+		if IsWin then
+			Leaderboard[Identifier].Won = Leaderboard[Identifier].Won + 1
+		else
+			Leaderboard[Identifier].Lost = Leaderboard[Identifier].Lost + 1
+		end
+
+		if not AdminTestMode then
+			SaveLeaderboard(LastMap[1])
+		end
+		
+		TriggerClientEvent('DD:C:UpdateLeaderboard', -1, Leaderboard)
 	end
-
-	Leaderboard[Identifier].Name = GetPlayerName(Source)
-
-	if IsWin then
-		Leaderboard[Identifier].Won = Leaderboard[Identifier].Won + 1
-	else
-		Leaderboard[Identifier].Lost = Leaderboard[Identifier].Lost + 1
-	end
-
-	TriggerClientEvent('DD:C:UpdateLeaderboard', -1, Leaderboard)
 end)
 
 RegisterServerEvent('DD:S:GetLeaderboard')
 AddEventHandler('DD:S:GetLeaderboard', function()
-	TriggerClientEvent('DD:C:UpdateLeaderboard', source, Leaderboard)
+	local Source = source
+	TriggerClientEvent('DD:C:UpdateLeaderboard', Source, Leaderboard)
 end)
 
 RegisterServerEvent('DD:S:Ready')
 AddEventHandler('DD:S:Ready', function(Player)
-	if not GameStarted then
-		GameStarted = true
+	local Source = source
+	if not IsTableContainingValue(ReadyPlayers, Source, false) then
+		if not GameStarted then
+			GameStarted = true
+		end
+		table.insert(ReadyPlayers, Source)
+		TriggerClientEvent('DD:C:Ready', -1, Player)
 	end
-	table.insert(ReadyPlayers, source)
-	TriggerClientEvent('DD:C:Ready', -1, Player)
 end)
 
 RegisterServerEvent('DD:S:Spawned')
 AddEventHandler('DD:S:Spawned', function()
-	table.insert(SpawnedPlayers, source)
+	local Source = source
+	if not IsTableContainingValue(SpawnedPlayers, Source, false) then
+		table.insert(SpawnedPlayers, Source)
+	end
 end)
 
 RegisterServerEvent('DD:S:Died')
 AddEventHandler('DD:S:Died', function()
-	table.insert(DiedPlayers, source)
+	local Source = source
+	if not IsTableContainingValue(DiedPlayers, Source, false) then
+		table.insert(DiedPlayers, Source)
+	end
 end)
 
 RegisterServerEvent('DD:S:MapSelectionMade')
 AddEventHandler('DD:S:MapSelectionMade', function(SelectedMap, SelectionIsPlayAgain)
+	local Source = source
 	if SelectionIsPlayAgain then
 		SelectedMap = 10
 	end
-	table.insert(MapSelections[SelectedMap], source)
-	table.insert(MapVoted, source)
+	if SelectedMap > 0 or SelectedMap < 10 then
+		if type(MapSelections[SelectedMap]) ~= 'table' then
+			MapSelections[SelectedMap] = {}
+		end
+		table.insert(MapSelections[SelectedMap], Source)
+		table.insert(MapVoted, Source)
+	end
 end)
 
 RegisterServerEvent('DD:S:VehicleClassSelectionMade')
 AddEventHandler('DD:S:VehicleClassSelectionMade', function(SelectedVehicleClass)
-	table.insert(VehicleClassSelections[SelectedVehicleClass], source)
-	table.insert(VehicleClassVoted, source)
+	local Source = source
+	if SelectedVehicleClass > 0 or SelectedVehicleClass < 10 then
+		if type(VehicleClassSelections[SelectedVehicleClass]) ~= 'table' then
+			VehicleClassSelections[SelectedVehicleClass] = {}
+		end
+		table.insert(VehicleClassSelections[SelectedVehicleClass], Source)
+		table.insert(VehicleClassVoted, Source)
+	end
 end)
 
 RegisterServerEvent('DD:S:GotLivingPlayer')
@@ -141,19 +157,44 @@ end)
 RegisterServerEvent('DD:S:AmIAlone')
 AddEventHandler('DD:S:AmIAlone', function(Players)
 	if GetNumPlayerIndices() == 1 and GetNumPlayerIndices() ~= #Players then
-		TriggerEvent('DD:S:GameFinished', LastMap[1], AdminTestMode)
+		TriggerEvent('DD:S:GameFinished', #SpawnedPlayers)
 	end
 end)
 
-AddEventHandler("playerDropped", function(Reason)
-	if IsTableContainingValue(SpawnedPlayers, source, false) then
-		SpawnedPlayers = RemoveValueFromTable(SpawnedPlayers, source)
+RegisterServerEvent('DD:S:GetMap')
+AddEventHandler('DD:S:GetMap', function()
+	local Source = source
+	local MapFile = io.open(ConvertedMapsPath .. LastMap[1] .. '.json', 'r')
+	local MapFileContent = MapFile:read('*a')
+	MapFile:close()
+
+	TriggerClientEvent('DD:C:UpdateLeaderboard', -1, Leaderboard)
+	TriggerClientEvent('DD:C:GotMap', Source, LastMap[1], json.decode(MapFileContent))
+end)
+
+AddEventHandler('playerDropped', function()
+	local Source = source
+	local Name = GetPlayerName(Source)
+	
+	if GetIdentifier(Source, 'license') == AdminTestModeAdmin then
+		AdminDisconnected()
 	end
-	if IsTableContainingValue(ReadyPlayers, source, false) then
-		ReadyPlayers = RemoveValueFromTable(ReadyPlayers, source)
+	
+	local Spawned = IsTableContainingValue(SpawnedPlayers, Source, false)
+	local Ready = IsTableContainingValue(ReadyPlayers, Source, false)
+	local Died = IsTableContainingValue(DiedPlayers, Source, false)
+	local OnePlayerLeft = #SpawnedPlayers - #DiedPlayers == 1
+	if Spawned then
+		if not OnePlayerLeft and not Died then
+			TriggerEvent('DD:S:UpdateLeaderboard', false, Source)
+		end
+		SpawnedPlayers = RemoveValueFromTable(SpawnedPlayers, Source)
 	end
-	if IsTableContainingValue(DiedPlayers, source, false) then
-		DiedPlayers = RemoveValueFromTable(DiedPlayers, source)
+	if Ready then
+		ReadyPlayers = RemoveValueFromTable(ReadyPlayers, Source)
+	end
+	if Died then
+		DiedPlayers = RemoveValueFromTable(DiedPlayers, Source)
 	end
 end)
 

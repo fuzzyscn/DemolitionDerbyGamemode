@@ -1,12 +1,12 @@
+NeededPlayer = 2;
 GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; RequestingDone = false; IsAlive = true;
-CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; NeededPlayer = 2; ScaleformCheckValue = -1; 
-DoCountdown = false; VoteTimer = 15; CollectedBoostPickups = 0
+CountdownScaleform = nil; AFKKickEnabled = false; ScaleformCheckValue = -1; DoCountdown = false;
+VoteTimer = 15; CollectedBoostPickups = 0; Leaderboard = {}; ShowLeaderboard = false; LossAdded = false;
+WaitingForPlayer = true; MidGameJoiner = false; 
 
-Leaderboard = {}; ShowLeaderboard = false
+IsFirstSpawn = true
 
-LossAdded = false; WinAdded = false
-
-WaitingForPlayer = true
+ClientIsConnecting = false
 
 SpawnedProps = {}; SpawnedPickups = {['Repair'] = {}, ['Boost'] = {}}; MapReceived = {false}; MySpawnPosition = nil; ReferenceZ = 0.0
 
@@ -34,9 +34,9 @@ AvailableWeatherTypes = {
 
 function ResetVariables()
 	GameStarted = false; GameRunning = false; StartState = nil; ReadyPlayers = {}; CurrentlySpectating = -1; IsAlive = true;
-	CountdownScaleform = nil; MidGameJoiner = false; AFKKickEnabled = false; ScaleformCheckValue = -1; DoCountdown = false;
-	VoteTimer = 15; CollectedBoostPickups = 0; Leaderboard = {}; ShowLeaderboard = false; LossAdded = false; WinAdded = false;
-	WaitingForPlayer = true;
+	CountdownScaleform = nil; AFKKickEnabled = false; ScaleformCheckValue = -1; DoCountdown = false;
+	VoteTimer = 15; CollectedBoostPickups = 0; Leaderboard = {}; ShowLeaderboard = false; LossAdded = false; 
+	WaitingForPlayer = true; MidGameJoiner = false; 
 end
 
 function round(num, numDecimalPlaces)
@@ -251,8 +251,8 @@ function SpectatingControl()
 		SetFocusEntity(PedSpectating)
 	end
 
-	ScaleformHandle = PreIBUse('INSTRUCTIONAL_BUTTONS', {{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
-	DrawScaleformMovieFullscreen(ScaleformHandle, 255, 255, 255, 255, 0)
+	IBScaleformHandle = PreIBUse({{['Slot'] = 0, ['Control'] = 175, ['Text'] = GetLabelText('HUD_SPECDN')}, {['Slot'] = 1, ['Control'] = 174, ['Text'] = GetLabelText('HUD_SPECUP')}})
+	DrawScaleformMovieFullscreen(IBScaleformHandle, 255, 255, 255, 255, 0)
 
 	if IsControlJustPressed(1, 174) then
 		PreviousPlayer(LivingPlayer, CurrentKey)
@@ -270,35 +270,27 @@ function RemoveMyVehicle()
 	end
 end
 
-SpawnLocations = {
-				  {['x'] = 261.4586, ['y'] = -998.8196, ['z'] = -99.00863, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -18.07856, ['y'] = -583.6725, ['z'] = 79.46569, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -35.31277, ['y'] = -580.4199, ['z'] = 88.71221, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1468.14, ['y'] = -541.815, ['z'] = 73.4442, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -1477.14, ['y'] = -538.7499, ['z'] = 55.5264, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -915.811, ['y'] = -379.432, ['z'] = 113.6748, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -614.86, ['y'] = 40.6783, ['z'] = 97.60007, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -773.407, ['y'] = 341.766, ['z'] = 211.397, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -169.286, ['y'] = 486.4938, ['z'] = 137.4436, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = 340.9412, ['y'] = 437.1798, ['z'] = 149.3925, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = 373.023, ['y'] = 416.105, ['z'] = 145.7006, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -676.127, ['y'] = 588.612, ['z'] = 145.1698, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -763.107, ['y'] = 615.906, ['z'] = 144.1401, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -857.798, ['y'] = 682.563, ['z'] = 152.6529, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = 120.5, ['y'] = 549.952, ['z'] = 184.097, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1288, ['y'] = 440.748, ['z'] = 97.69459, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = 261.4586, ['y'] = -998.8196, ['z'] = -99.00863, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -18.07856, ['y'] = -583.6725, ['z'] = 79.46569, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -35.31277, ['y'] = -580.4199, ['z'] = 88.71221, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1468.14, ['y'] = -541.815, ['z'] = 73.4442, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -1477.14, ['y'] = -538.7499, ['z'] = 55.5264, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -915.811, ['y'] = -379.432, ['z'] = 113.6748, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -614.86, ['y'] = 40.6783, ['z'] = 97.60007, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -773.407, ['y'] = 341.766, ['z'] = 211.397, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -169.286, ['y'] = 486.4938, ['z'] = 137.4436, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = 340.9412, ['y'] = 437.1798, ['z'] = 149.3925, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = 373.023, ['y'] = 416.105, ['z'] = 145.7006, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -676.127, ['y'] = 588.612, ['z'] = 145.1698, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = -763.107, ['y'] = 615.906, ['z'] = 144.1401, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -857.798, ['y'] = 682.563, ['z'] = 152.6529, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-				  {['x'] = 120.5, ['y'] = 549.952, ['z'] = 184.097, ['h'] = 0.0, ['hash'] = GetRandomPed()}, {['x'] = -1288, ['y'] = 440.748, ['z'] = 97.69459, ['h'] = 0.0, ['hash'] = GetRandomPed()},
-			     };
-				 
-function Respawn()
-	local Ped = PlayerPedId()
-	local PlayerID = PlayerId()
-
-	ScreenFadeOut(1500)
-
+function StopLoadingScreen()
 	if GetIsLoadingScreenActive() then
 		ShutdownLoadingScreen()
 		ShutdownLoadingScreenNui()
 	end
+end
+
+SpawnValues = {['x'] = -614.86, ['y'] = 40.6783, ['z'] = 97.60007, ['Hash'] = GetRandomPed()}
+
+function Respawn()
+	ScreenFadeOut(1500)
+
+	local Ped = PlayerPedId()
+	local PlayerID = PlayerId()
+
+	if NetworkIsInSpectatorMode() then
+		ClearFocus()
+		Spectate(false, PlayerId())
+	end
+	
+	StopLoadingScreen()
 
 	SetPlayerControl(PlayerID, false, false)
 	SetPlayerInvincible(PlayerID, true)
@@ -307,23 +299,13 @@ function Respawn()
 	SetEntityCollision(Ped, false)
 	FreezeEntityPosition(Ped, true)
 
-	local SpawnValues = SpawnLocations[PlayerID + 1]
-	if not HasModelLoaded(SpawnValues.hash) then
-		RequestModel(SpawnValues.hash)
-		while not HasModelLoaded(SpawnValues.hash) do
-			Citizen.Wait(250)
-		end
-	end
-	SetPlayerModel(PlayerID, SpawnValues.hash)
-	SetModelAsNoLongerNeeded(SpawnValues.hash)
-	while not IsEntityAPed(Ped) do
-		Citizen.Wait(250)
-		Ped = PlayerPedId()
-	end
 	RequestCollisionAtCoord(SpawnValues.x, SpawnValues.y, SpawnValues.z)
 	SetEntityCoordsNoOffset(Ped, SpawnValues.x, SpawnValues.y, SpawnValues.z, false, false, false, true)
-	NetworkResurrectLocalPlayer(SpawnValues.x, SpawnValues.y, SpawnValues.z, SpawnValues.h, true, true, false)
+	NetworkResurrectLocalPlayer(SpawnValues.x, SpawnValues.y, SpawnValues.z, 0.0, true, true, false)
 
+	ClearPedBloodDamage(Ped)
+	ResetPedVisibleDamage(Ped)
+	ClearPedLastWeaponDamage(Ped)
 	ClearPedTasksImmediately(Ped)
 
 	while not HasCollisionLoadedAroundEntity(Ped) do
@@ -332,12 +314,9 @@ function Respawn()
 
 	SetPlayerControl(PlayerID, true, false)
 	SetPlayerInvincible(PlayerID, false)
-
-	SetPedRandomComponentVariation(Ped, false)
-	SetPedRandomProps(Ped)
-
+	
 	SetEntityVisible(Ped, true)
-	if not IsPedInAnyVehicle(Ped) then SetEntityCollision(Ped, true) end
+	SetEntityCollision(Ped, true)
 	FreezeEntityPosition(Ped, false)
 	
 	TriggerServerEvent('DD:S:Spawned')
@@ -345,8 +324,8 @@ function Respawn()
 	ScreenFadeIn(1500)
 end
 
-function PreIBUse(ScaleformName, Controls)
-	local ScaleformHandle = RequestScaleformMovie(ScaleformName)
+function PreIBUse(Controls)
+	local ScaleformHandle = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS')
 	while not HasScaleformMovieLoaded(ScaleformHandle) do
 		Citizen.Wait(0)
 	end
@@ -386,7 +365,7 @@ function PreIBUse(ScaleformName, Controls)
 end
 
 function IsPlayerAbleToPlay(Player)
-	if Player ~= nil and not IsPlayerDead(Player) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ZERO')) then
+	if Player ~= nil and not IsPlayerDead(Player) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ZERO')) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_ONE')) and not (GetEntityModel(GetPlayerPed(Player)) == GetHashKey('PLAYER_TWO')) then
 		return true
 	end
 	return false
@@ -410,7 +389,24 @@ end
 
 function GetActualMapName(Map)
 	local MapNameDotPosition = Map:reverse():find('%.')
+
+	local CreatorBegin = Map:lower():find(' by ')
+	if CreatorBegin then
+		return Map:sub(1, CreatorBegin - 1)
+	end
+
 	return Map:sub(1, Map:len() - MapNameDotPosition)
+end
+
+function GetMapCreator(Map)
+	local MapNameDotPosition = Map:reverse():find('%.')
+
+	local CreatorBegin = Map:lower():find(' by ')
+	if CreatorBegin then
+		return Map:sub(CreatorBegin + 4, Map:len() - MapNameDotPosition)
+	end
+
+	return 'Unknown'
 end
 
 function GetWeatherIndex()

@@ -10,7 +10,7 @@ local function GetMenyooSub(String)
 	return table.concat(StringSplitted, "\n")
 end
 
-local function MenyooToLUA(String)
+local function MenyooToLua(String)
 	local StringSplitted = StringSplit(GetMenyooSub(String), '\n')
 	local ReturnTable = {['Props'] = {}, ['Vehicles'] = {}};
 	local TempTable = {}; PlacementStart = false
@@ -37,7 +37,7 @@ local function MenyooToLUA(String)
 	return ReturnTable
 end
 
-local function MapEditorToLUA(String)
+local function MapEditorToLua(String)
 	local StringSplitted = StringSplit(String, '\n'); ReturnTable = {['Props'] = {}, ['Vehicles'] = {}};
 		  TempTable = {}; MapObjectStart = false; Rotation = false; Quaternion = false
 	for k, Line in ipairs(StringSplitted) do
@@ -50,7 +50,7 @@ local function MapEditorToLUA(String)
 					table.insert(ReturnTable.Props, TempTable)
 				elseif TempTable.Type == 'Pickup' and TempTable.ModelHash == '160266735' then
 					TempTable.Type = 'Prop'
-					TempTable.ModelHash = '0xe6fa7770'
+					TempTable.ModelHash = '0xE6FA7770'
 					table.insert(ReturnTable.Props, TempTable)
 				elseif TempTable.Type == 'Vehicle' then
 					table.insert(ReturnTable.Vehicles, TempTable)
@@ -97,12 +97,12 @@ local function MapEditorToLUA(String)
 	return ReturnTable
 end
 
-function MapToLUA(String)
+function MapToLua(String)
 	local Table
 	if String:find('<SpoonerPlacements>') then
-		Table = MenyooToLUA(String)
+		Table = MenyooToLua(String)
 	else
-		Table = MapEditorToLUA(String)
+		Table = MapEditorToLua(String)
 	end
 	return Table
 end

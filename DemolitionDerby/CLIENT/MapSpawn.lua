@@ -1,6 +1,37 @@
-function SpawnMap(MapName, MapTable, Class)
+function SpawnMap(MapName, MapTable, Class, SpawnPlayer)
 	if #MapTable.Vehicles >= MaximumPlayer then
-		if #SpawnedProps > 0 and NetworkIsHost() then
+		if NetworkIsHost() then
+			local SpawnLocation = MapReceived[3].Vehicles[Player + 1]
+			local Ped = PlayerPedId()
+
+			SetEntityCoords(Ped, tonumber(SpawnLocation.X), tonumber(SpawnLocation.Y), tonumber(SpawnLocation.Z), false, false, false, false)
+			
+			FreezeEntityPosition(Ped, true)
+
+			local Deleted = 0
+			for Ped in EnumeratePeds() do
+				if not IsPedAPlayer(Ped) and Deleted < 100 then
+					Deleted = Deleted + 1
+					FreezeEntityPosition(Ped, false)
+					SetEntityAsMissionEntity(Ped, false, false)
+					DeleteEntity(Ped)
+				else
+					break
+				end
+			end
+			Deleted = 0
+			for Vehicle in EnumerateVehicles() do
+				if Deleted < 100 then
+					Deleted = Deleted + 1
+					FreezeEntityPosition(Vehicle, false)
+					SetEntityAsMissionEntity(Vehicle, false, false)
+					DeleteEntity(Vehicle)
+				else
+					break
+				end
+			end
+		end
+		if #SpawnedProps > 0 then
 			local Coords = GetEntityCoords(SpawnedProps[1], false)
 			ClearAreaOfCops(Coords, 500.0, 0)
 			ClearAreaOfObjects(Coords, 500.0, 0)
@@ -8,7 +39,7 @@ function SpawnMap(MapName, MapTable, Class)
 			ClearAreaOfProjectiles(Coords, 500.0, true)
 			ClearAreaOfVehicles(Coords, 500.0, false, false, false, false, false)
 		end
-		
+
 		for Key, Prop in ipairs(SpawnedProps) do
 			while DoesEntityExist(Prop) do
 				Citizen.Wait(0)
@@ -50,32 +81,33 @@ function SpawnMap(MapName, MapTable, Class)
 				else
 					local Dynamic = false
 					if Value.Dynamic == 'true' then Dynamic = true end
+					Value.Pitch = tonumber(Value.Pitch) + 0.0
+					Value.Roll = tonumber(Value.Roll) + 0.0
+					Value.Yaw = tonumber(Value.Yaw) + 0.0
+
 					local Prop = CreateObject(tonumber(Value.ModelHash), tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, Dynamic)
 
 					table.insert(SpawnedProps, Prop)
 
 					SetEntityCollision(Prop, false, false)
 					SetEntityCoords(Prop, tonumber(Value.X), tonumber(Value.Y), tonumber(Value.Z), false, false, false, false)
-					Value.Pitch = tonumber(Value.Pitch) + 0.0
-					Value.Roll = tonumber(Value.Roll) + 0.0
-					Value.Yaw = tonumber(Value.Yaw) + 0.0
-					if Value.Pitch < 0.0 then Value.Pitch = 180.0 + (180.0 - math.abs(Value.Pitch)) end
-					SetEntityRotation(Prop, Value.Pitch, Value.Roll, Value.Yaw, 3, 0)
-					FreezeEntityPosition(Prop, true)
+					SetEntityDynamic(Prop, Dynamic)
+					SetEntityRotation(Prop, Value.Pitch, Value.Roll, Value.Yaw, 2, 0)
+					FreezeEntityPosition(Prop, not Dynamic)
 					SetEntityCollision(Prop, true, true)
 
-					SetEntityAsMissionEntity(Prop, false, true)
 					SetEntityAsMissionEntity(Prop, true, true)
 				end
 				SetModelAsNoLongerNeeded(tonumber(Value.ModelHash))
-				
 			end
 		end
-		
-		SpawnMe(MapReceived[3].Vehicles[PlayerId() + 1], Class)
+
+		if SpawnPlayer then
+			SpawnMe(MapReceived[3].Vehicles[PlayerId() + 1], Class)
+		end
 	else
 		GameStarted = false
-		ShowNotification('~r~ERROR!~n~Only ' .. #MapTable.Vehicles .. ' Spawnpoints.~n~' .. MaximumPlayer - #MapTable.Vehicles .. ' missing!')
+		ShowNotification('~r~ERROR!~n~Only ' .. #MapTable.Vehicles .. ' of ' .. MaximumPlayer .. ' Spawnpoints.')
 		ShowNotification('~r~' .. GetLabelText('FMMC_RANDFAIL') .. '~y~' .. GetLabelText('USJ_FAILSAFE'))
 	end
 end

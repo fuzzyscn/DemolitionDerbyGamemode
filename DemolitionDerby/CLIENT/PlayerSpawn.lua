@@ -44,6 +44,7 @@ function SpawnMe(SpawnLocation, VehicleClass)
 
 	GameStarted = true
 
-	return ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName(MapReceived[2])))
+	ShowNotification('~g~' .. GetLabelText('FM_COR_FLCH'):gsub('~a~', GetActualMapName(MapReceived[2])))
+	ShowNotification('~g~' .. GetLabelText('PM_CREATED') .. ' ' .. GetMapCreator(MapReceived[2]))
 end
 

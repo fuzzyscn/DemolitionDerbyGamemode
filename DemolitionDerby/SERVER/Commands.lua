@@ -24,7 +24,7 @@ RegisterCommand('Bugreport', function(Source, Arguments, RawCommand)
 	local IdentifiersString = table.concat(Identifiers, ' / '):gsub('steam:', 'Steam: '):gsub('license:', 'License: '):gsub('ip:', 'IP: ')
 
 	Content = Content .. '	' .. GetPlayerName(Source) .. ' (' .. IdentifiersString .. ')\n			>> ' .. Report .. '\n'
-
+	
 	SaveResourceFile(GetCurrentResourceName(), 'BugReports' .. GetOSSep() .. 'BugReport_v' .. CurrentVersion .. '_' .. date.day .. '.' .. date.month .. '.' .. date.year .. '.txt', Content, -1)
 
 	print(GetPlayerName(Source) .. ' reported a bug!\n>> ' .. Report)

@@ -51,13 +51,13 @@ Citizen.CreateThread(function()
 			end
 
 			if not MapSelectionMade then
-				if IsControlJustReleased(0, 172) then -- UP
+				if IsControlJustReleased(0, 172) or IsControlJustPressed(0, 181) then -- UP
 					Selected = Selected - 1
 
 					if Selected == 0 then
 						Selected = Counter
 					end
-				elseif IsControlJustReleased(0, 173) then -- DOWN
+				elseif IsControlJustReleased(0, 173) or IsControlJustPressed(0, 180) then -- DOWN
 					Selected = Selected + 1
 
 					if Selected > Counter then
@@ -107,13 +107,13 @@ Citizen.CreateThread(function()
 			if not VehicleClassSelectionMade then
 				Counter = #VehiclesClasses
 
-				if IsControlJustReleased(0, 172) then -- UP
+				if IsControlJustReleased(0, 172) or IsControlJustPressed(0, 181) then -- UP
 					Selected = Selected - 1
 
 					if Selected == 0 then
 						Selected = Counter
 					end
-				elseif IsControlJustReleased(0, 173) then -- DOWN
+				elseif IsControlJustReleased(0, 173) or IsControlJustPressed(0, 180) then -- DOWN
 					Selected = Selected + 1
 
 					if Selected > Counter then
