@@ -58,7 +58,7 @@ AddEventHandler('DD:S:LoadMap', function(Map, VehicleClass)
 		MapFile:close()
 		LoadLeaderboard(Map[1], json.decode(MapFileContent), VehicleClass)
 	else
-		print('ERROR!\nMap not found!')
+		print('ERROR!\nMap \'' .. Map[1] .. '\' not found!')
 	end
 end)
 

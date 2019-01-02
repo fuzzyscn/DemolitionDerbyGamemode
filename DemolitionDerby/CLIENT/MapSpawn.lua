@@ -80,7 +80,7 @@ function SpawnMap(MapName, MapTable, Class, SpawnPlayer)
 					SetPickupRegenerationTime(Pickup, 10000)
 				else
 					local Dynamic = false
-					if Value.Dynamic == 'true' then Dynamic = true end
+					if Value.Dynamic == 'true' or IsExplosive(Value.ModelHash) then Dynamic = true end
 					Value.Pitch = tonumber(Value.Pitch) + 0.0
 					Value.Roll = tonumber(Value.Roll) + 0.0
 					Value.Yaw = tonumber(Value.Yaw) + 0.0

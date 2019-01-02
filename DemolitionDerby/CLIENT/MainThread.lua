@@ -1,77 +1,3 @@
---[[
-local function Countdown(State)
-	if State then
-		if not HasScaleformMovieLoaded(CountdownScaleform) then
-			CountdownScaleform = RequestScaleformMovie('COUNTDOWN')
-			while not HasScaleformMovieLoaded(CountdownScaleform) do
-				Citizen.Wait(0)
-			end
-		end
-		local R, G, B, A
-		BeginScaleformMovieMethod(CountdownScaleform, 'SET_MESSAGE')
-		
-		if State ~= 0 then
-			R, G, B, A = 240, 200, 80, 255
-			BeginTextCommandScaleformString('NUMBER')
-			AddTextComponentInteger(State)
-		else
-			R, G, B, A = 114, 204, 114, 255
-			BeginTextCommandScaleformString('CNTDWN_GO')
-		end
-		EndTextCommandScaleformString()
-		PushScaleformMovieMethodParameterInt(R)
-		PushScaleformMovieMethodParameterInt(G)
-		PushScaleformMovieMethodParameterInt(B)
-		PushScaleformMovieMethodParameterInt(A)
-		PushScaleformMovieMethodParameterBool(true)
-		EndScaleformMovieMethod()
-		DrawScaleformMovieFullscreen(CountdownScaleform, 255, 255, 255, 100, 0)
-	end
-end
-
-local function Finished(IsLastPlayer)
-	local Deleted = 0
-	ScreenFadeOut(1500)
-	
-	if IsLastPlayer then
-		RemoveMyVehicle()
-	else
-		local SpawnLocation = MapReceived[3].Vehicles[Player + 1]
-		local Ped = PlayerPedId()
-
-		SetEntityCoords(Ped, tonumber(SpawnLocation.X), tonumber(SpawnLocation.Y), tonumber(SpawnLocation.Z), false, false, false, false)
-		
-		FreezeEntityPosition(Ped, true)
-	end
-	
-	for Ped in EnumeratePeds() do
-		if not IsPedAPlayer(Ped) and Deleted < 100 then
-			Deleted = Deleted + 1
-			FreezeEntityPosition(Ped, false)
-			SetEntityAsMissionEntity(Ped, false, false)
-			DeleteEntity(Ped)
-		else
-			break
-		end
-	end
-	Deleted = 0
-	for Vehicle in EnumerateVehicles() do
-		if Deleted < 100 then
-			Deleted = Deleted + 1
-			FreezeEntityPosition(Vehicle, false)
-			SetEntityAsMissionEntity(Vehicle, false, false)
-			DeleteEntity(Vehicle)
-		else
-			break
-		end
-	end
-
-	TeleportMyBodyAway()
-		
-	TriggerServerEvent('DD:S:GameFinished', MapReceived[2], AdminTestMode)
-end
-]]
-
 Citizen.CreateThread(function()
 	local AT = {'fmmc'}
 	local Players
@@ -286,6 +212,10 @@ Citizen.CreateThread(function()
 
 				local MyCoords = GetEntityCoords(Ped, true)
 				
+				if HasEntityCollidedWithAnything(Vehicle) and HasEntityCollidedWithExplosiveProps(Vehicle) then
+					AddExplosion(MyCoords.x, MyCoords.y, MyCoords.z, 16, 50.0, true, false, 1.0, false)
+				end
+
 				if ReferenceZ - MyCoords.z > 10.0 or IsEntityInWater(Vehicle) or not IsVehicleDriveable(Vehicle, true) or GetEntityHealth(Vehicle) <= CriticalVehicleDamage or GetVehicleEngineHealth(Vehicle) <= 300 or GetVehiclePetrolTankHealth(Vehicle) <= 600 then
 					NetworkExplodeVehicle(Vehicle, true, false, 0)
 					SetEntityHealth(Ped, 0)

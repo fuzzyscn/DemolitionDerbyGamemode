@@ -14,6 +14,9 @@ IsAdmin = false; AvailableMaps = {}; CurrentMap = ''; AdminTestMode = false; Cur
 
 MaximumPlayer = 32
 
+--Explosives = {'W_ARENA_AIRMISSILE_01A', 'IMP_PROP_BOMB_BALL', 'HEI_PROP_CARRIER_BOMBS_1', 'PROP_LD_BOMB_01', 'PROP_LD_BOMB_01_OPEN', 'PROP_LD_BOMB_ANIM', 'PROP_LD_BOMB', 'W_LR_RPG_ROCKET', 'W_EX_GRENADEFRAG', 'PROP_C4_FINAL', 'PROP_C4_FINAL_GREEN', 'STT_PROP_C4_STACK', 'W_LR_HOMING_ROCKET', 'XS_PROP_ARENA_LANDMINE_01A', 'XS_PROP_ARENA_LANDMINE_01A_SF', 'XS_PROP_ARENA_LANDMINE_01C', 'XS_PROP_ARENA_LANDMINE_01C_SF', 'XS_PROP_ARENA_LANDMINE_01C_WL', 'XS_PROP_ARENA_LANDMINE_03A', 'XS_PROP_ARENA_LANDMINE_03A_SF', 'XS_PROP_ARENA_LANDMINE_03A_WL', 'XS_PROP_ARENA_BARREL_01A', 'XS_PROP_ARENA_BARREL_01A_SF', 'XS_PROP_ARENA_BARREL_01A_WL', 'XS_PROP_ARENA_BOMB_S', 'XS_PROP_ARENA_BOMB_M' ,'XS_PROP_ARENA_BOMB_L'}
+Explosives = {0xF38A0747, 0xC6D417D0, 0xE58C6FC3, 0xB2274905, 0xA8933DA1, 0x699C8FC0, 0x376024BC, 0x9A3207B7, 0x1152354B, 0xB4861EB7, 0x86C8E4C3, 0x108D7CD5, 0xBBAD749E, 0x50534AD4, 0x2E3B6F86, 0xF37D111D, 0xF1D55C6B, 0x5758A1F8, 0x6180E18B, 0x7842AD45, 0xA1DD84AE, 0xF00BEC6F, 0x44F95782, 0x7372B010, 0xBF77D87C, 0x153F040D, 0x23A8A0E0}
+
 AvailableWeatherTypes = {
 						 'BLIZZARD',
 						 'CLEAR',
@@ -383,6 +386,25 @@ function IsBoostPickup(Pickup)
 	Pickup = tonumber(Pickup)
 	if Pickup == 0x537308AE or Pickup == 0x65EAF4B2 then
 		return true
+	end
+	return false
+end
+
+function IsExplosive(Prop)
+	Prop = tonumber(Prop)
+	for Key, Explosive in pairs(Explosives) do
+		if Prop == Explosive then
+			return true
+		end
+	end
+	return false
+end
+
+function HasEntityCollidedWithExplosiveProps(Vehicle)
+	for Key, Explosive in pairs(Explosives) do
+		if IsEntityTouchingModel(Vehicle, Explosive) then
+			return true
+		end
 	end
 	return false
 end

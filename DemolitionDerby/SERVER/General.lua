@@ -61,15 +61,16 @@ Citizen.CreateThread(function()
 							if MapCount > 9 then
 								Counter = 9
 								
-								local TempTable = Maps
-								local TempCount = MapCount
-								
+								local ChoosenIndexes = {}
 								for Index = 1, 9 do
-									math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
-									local RandomNumber = math.random(1, TempCount)
-									table.insert(VoteMaps, TempTable[RandomNumber])
-									table.remove(TempTable, RandomNumber)
-									TempCount = TempCount - 1
+									local RandomNumber = math.random(1, MapCount)
+									while IsTableContainingValue(ChoosenIndexes, RandomNumber, false) do
+										Citizen.Wait(0)
+										RandomNumber = math.random(1, MapCount)
+									end
+									
+									table.insert(ChoosenIndexes, RandomNumber)
+									table.insert(VoteMaps, Maps[RandomNumber])
 								end
 							else
 								VoteMaps = Maps
