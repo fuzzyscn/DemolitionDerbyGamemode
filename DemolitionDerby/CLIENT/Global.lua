@@ -504,3 +504,8 @@ function DisplayHelpMessage(Content, Type, Loop, Beep, Duration)
 	EndTextCommandDisplayHelp(0, Loop, Beep, Duration)
 end
 
+function TogglePvP(Toggle)
+    NetworkSetFriendlyFireOption(Toggle)
+    SetCanAttackFriendly(PlayerPedId(), Toggle, Toggle)
+end
+
