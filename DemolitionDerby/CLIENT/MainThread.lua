@@ -72,7 +72,7 @@ Citizen.CreateThread(function()
 		Players = GetPlayers()
 		LivingPlayer = GetLivingPlayers()
 		local Ped = PlayerPedId(); Player = PlayerId()
-
+		TogglePvP(false)
 		if not GameStarted and not GameRunning then
 			SetPedArmour(Ped, 100)
 			SetEntityHealth(Ped, 200)
@@ -150,6 +150,7 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif GameStarted and GameRunning then
+			TogglePvP(true)
 			RenderPlayerList(Players)
 			RenderLeaderBoard()
 			
